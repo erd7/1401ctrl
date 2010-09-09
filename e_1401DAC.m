@@ -3,7 +3,7 @@ function r = e_1401DAC()
 %ERDCONTROL main program & GUI file (construction routines % initialization)
 %RBP (e), Bln2010
 
-%TODO: entry (amp) max. 5volts/ min -5volts! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
+%TODO: entry (amp) max. 5volts/ min -5volts; mit offset vereinbaren! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
 %FRQ: Nach unten gegen 0, nach oben gegen unendlich (Max value?)
 %GESONDERTE gen_signal klasse mit GenSignal methode, da output und stim darauf zugreifen! redundanz verringern!
 %globale Datenstruktur für experimentelles Datenmaterial; Steuerdaten weiterhin objektorientiert handhaben
@@ -136,7 +136,7 @@ MATCED32('cedLdX','C:\power1401Lang\','MEMDAC','ADCMEM'); %Why load these cmds? 
    H = getappdata(H.main,'uihandles');
    
    %Invoke instances of control classes:
-   GUIINPUT = userinput(H.edit1,H.edit2);
+   GUIINPUT = userinput(H.edit1,H.edit2,H.edit3);
    SIGNAL = gen_signal(RADIOGRP,GUIINPUT);
    CALLINOUT = guiout(GUIINPUT,SIGNAL,H.main,H.disp2);
    CALLTOGGLE = togglecallback(TOGGLEBTTN,SIGNAL);

@@ -22,9 +22,8 @@ classdef togglecallback < handle
       function r = stim(obj,src,evt)
          %power1401 stim routine         
          chk = -1;
-         datalength = 40000; %In Generatorroutine einkapseln!
          dacScale = 32768/5; %Voltage scaling by DAC-units; CHECK "voltage resolution": note 16bit for -5V to +5V (--> 2^16/10 = 6553,6 as step width of 1V)
-         
+         %--> divide by 10?
          
          MATCED32('cedSendString','MEMDAC,?;');
          chk = eval(MATCED32('cedGetString')); %does not work without eval! CLARIFY!
@@ -33,11 +32,9 @@ classdef togglecallback < handle
 
          if chk==1 || chk==0
             %Conversion of input params into DAC-units:
-            dacOut = dacScale * obj.SignalObj.Signal; %output signal setup (see gen_signal()); --> dacOut will be array of size = z with all operations defined done to it --> digits (fct values) of the sinus-curve!
-            %--> every successive voltage value is send to power1401! check: max. ram load!
-            %--> to generate complex signals change digits of dacOut- Array manually! for realtime invent more dynamic memory management paradigm
+            dacOut = dacScale * obj.SignalObj.Signal; %every successive voltage value will be send to power1401; check: max. RAM load! to generate complex signals change digits of dacOut- Array! for realtime manipulation invent more dynamic memory management paradigm
    
-            MATCED32('cedTo1401',datalength,0,dacOut);
+            MATCED32('cedTo1401',obj.SignalObj.DataLength,0,dacOut);
             sz = int2str(2*datalength); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! why *2? --> PRÜFE MIT OSZI!
             
             %OUTPUT: just use DAC0; immediate signal, no trigger! use HT for trigger, check exsample code; disable interrupt for output loop?

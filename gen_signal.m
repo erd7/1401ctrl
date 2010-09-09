@@ -5,6 +5,7 @@ classdef gen_signal < handle
       ListeningTo2
       Signal
       SignalSelection = 1; %Stelle in der mainfkt prüfen, sodass default direkt übers listening möglich wird!
+      DataLength = 40000;
    end
    methods
       %Constructor:
@@ -15,24 +16,21 @@ classdef gen_signal < handle
          obj.ListeningTo2 = src2;
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
-         addlistener(obj.ListeningTo1,'SelRadio1',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2));
-         addlistener(obj.ListeningTo1,'SelRadio2',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2));
-         addlistener(obj.ListeningTo2,'NewInputAlert',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2));
+         addlistener(obj.ListeningTo1,'SelRadio1',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2,src2.Entry3));
+         addlistener(obj.ListeningTo1,'SelRadio2',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2,src2.Entry3));
+         addlistener(obj.ListeningTo2,'NewInputAlert',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2,src2.Entry3));
          
          switch obj.SignalSelection
             case 1
-               obj.GenSin(src2.Entry1,src2.Entry2);
+               obj.GenSin(src2.Entry1,src2.Entry2,src2.Entry3);
          end
       end
-      function GenSin(obj,m,n)
+      function GenSin(obj,m,n,o)
          %may use:
-         %z = 0; %intermed. var for signal array creation; now obsolete due to standard package size (make dependent on user input!)
-         %daclength = 40*durn; %40kHz; see clock setup in generating section! --> SAMPLE RATE! (VERIF.)
-         %z = 1:daclength; %define array of 40*duration vars, thus 10ms correspond with an array of the size of 400; vars hold successive numbers --> DATA TRANSFER ARRAY (holds information about the "digital curve/signal")
-         
-         datarray = 0:39999; %1datapackage/s by default! u.U. bis zu 1s nachlauf, bis datenpaket fertig gesampled! (oder mehr? wann ist der frühstmögliche eintritt des abbruchsignals?)
+         %daclength = 40*durn; %40kHz; see clock setup in generating section! --> SAMPLE RATE! (VERIF.)         
+         datarray = 0:(obj.DataLength-1); %1datapackage/s by default! u.U. bis zu 1s nachlauf, bis datenpaket fertig gesampled! (oder mehr? wann ist der frühstmögliche eintritt des abbruchsignals?)
 
-         obj.Signal = m*sin(2*pi/40000*n*datarray); %nota: zeitliche auflösung sinkt reziprok zur frequenz!
+         obj.Signal = m*sin(2*pi/40000*n*datarray)+o; %nota: zeitliche auflösung sinkt reziprok zur frequenz!
       end
    end
 end
