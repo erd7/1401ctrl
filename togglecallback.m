@@ -3,6 +3,7 @@ classdef togglecallback < handle
    properties (SetAccess = public, GetAccess = public)
       ListeningTo
       SignalObj
+      DacScale = 32768/5; %implement as input option in preferences struct; voltage scaling by DAC-units; CHECK "voltage resolution": note 16bit for -5V to +5V (--> 2^16/10 = 6553,6 as step width of 1V); --> divide by 10?
    end
    methods
       %Constructor:
@@ -11,41 +12,51 @@ classdef togglecallback < handle
          obj.SignalObj = srcobj2;
          
          addlistener(obj.ListeningTo,'ToggleOn',@(src,evt)StimCtrl(obj,src,evt));
-         addlistener(obj.ListeningTo,'ToggleOff',@(src,evt)StimCtrl(obj,src,evt)); %Register as a ToggleOff listener to ensure stop condition
+         %(Listening to ToggleOff is not necessary at all as stop condition (see below) is checked before every iteration correctly)
       end
-      %Stimulation control:
+      %Stimulation control and sampling routine:
       function StimCtrl(obj,src,evt)
-         while obj.ListeningTo.ToggleState == 1
-            obj.stim(src,evt);
-         end
-      end
-      function r = stim(obj,src,evt)
-         %power1401 stim routine         
-         chk = -1;
-         dacScale = 32768/5; %Voltage scaling by DAC-units; CHECK "voltage resolution": note 16bit for -5V to +5V (--> 2^16/10 = 6553,6 as step width of 1V)
-         %--> divide by 10?
+         chk = -1; %some initial value ~= 0,1,2,-128
+         sz = int2str(2*obj.SignalObj.DataLength); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! why *2? --> PRÜFE MIT OSZI! see INTERACT: Buffersize 0-80k!
          
-         MATCED32('cedSendString','MEMDAC,?;');
-         chk = eval(MATCED32('cedGetString')); %does not work without eval! CLARIFY!
-         %pause(0.1);  %this is an alternative to drawnow; CLARIFY!
-         drawnow; %flushes the event queue
-
-         if chk==1 || chk==0
-            %Conversion of input params into DAC-units:
-            dacOut = dacScale * obj.SignalObj.Signal; %every successive voltage value will be send to power1401; check: max. RAM load! to generate complex signals change digits of dacOut- Array! for realtime manipulation invent more dynamic memory management paradigm
-   
-            MATCED32('cedTo1401',obj.SignalObj.DataLength,0,dacOut);
-            sz = int2str(2*datalength); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! why *2? --> PRÜFE MIT OSZI!
+         while chk ~= 0
+            MATCED32('cedSendString','MEMDAC,?;');
+            chk = eval(MATCED32('cedGetString')); %does not work without eval! CLARIFY!
+            %pause(0.1);  %this is an alternative to drawnow; CLARIFY!
+            drawnow; %flushes the event queue
             
-            %OUTPUT: just use DAC0; immediate signal, no trigger! use HT for trigger, check exsample code; disable interrupt for output loop?
-            %Define RAM sector for output!
-            MATCED32('cedSendString',['MEMDAC,I,2,0,' sz ',0,1,H,10,10;']); %analog waveform output from RAM-Data (--> MEMDAC): kind: I (interrupt driven), byte: 2 (thus 16bit data), st: 0 (start at user RAM address 0); sz (size of transferred data, look above), chan: 0 (defines output channel: DAC-output 0), rpts: 1 (number of repeats), clock: H (high-speed clock: 4MHz (native sample rate; SEE FURTHER)), pre*cnt: 10*10 = 100: downsampling the selected clock by divisor of 100! --> sample rate of 40kHz, as implemented above! --> see manual: "clock set up"
-         else
-            r = chk;
+            if chk == 0 %transfer whole data package initially to stimulation
+               dacOut = obj.DacScale * obj.SignalObj.Signal; %Conversion of input params into DAC-units:
+               MATCED32('cedTo1401',obj.SignalObj.DataLength,0,dacOut); %Load the data to 1401 buffer (check max. RAM load); to generate complex signals change digits of dacOut- Array! for realtime manipulation invent more dynamic memory management paradigm
+            end
          end
-
-         %read immediately!
-         %MATCED32('cedSendString',['ADCMEM,I,2,1800,' sz ',0,1,H,10,10;']); %analog waveform output from RAM-Data (--> MEMDAC): kind: I (interrupt driven), byte: 2 (thus 16bit data), st: 0 (start at user RAM address 0); sz (size of transferred data, look above), chan: 0 (defines output channel: DAC-output 0), rpts: 1 (number of repeats), clock: H (high-speed clock: 4MHz (native sample rate; SEE FURTHER)), pre*cnt: 10*10 = 100: downsampling the selected clock by divisor of 100! --> sample rate of 40kHz, as implemented above! --> see manual: "clock set up" 
+         
+         %Execute the first sampling cycle:
+         %OUTPUT: just use DAC0; immediate signal, no trigger! use HT for trigger, check exsample code; disable interrupt for output loop?
+         %Define RAM sector for output!
+         MATCED32('cedSendString',['MEMDAC,I,2,0,' sz ',0,1,H,10,10;']); %analog waveform output from RAM-Data (--> MEMDAC): kind: I (interrupt driven), byte: 2 (thus 16bit data), st: 0 (start at user RAM address 0); sz (size of transferred data, look above), chan: 0 (defines output channel: DAC-output 0), rpts: 1 (number of repeats), clock: H (high-speed clock: 4MHz (native sample rate; SEE FURTHER)), pre*cnt: 10*10 = 100: downsampling the selected clock by divisor of 100! --> sample rate of 40kHz, as implemented above! --> see manual: "clock set up"
+         
+         %Execute signal update & sampling loop (hoping updating is fast enough to be done before currently played address reaches first digit of update data package):
+         while obj.ListeningTo.ToggleState == 1
+            %Conversion of input params into DAC-units and split signal array:
+            dacOuth1 = obj.DacScale * obj.SignalObj.Signal(1:(length(obj.SignalObj.Signal)/2));
+            dacOuth2 = obj.DacScale * obj.SignalObj.Signal((length(obj.SignalObj.Signal)/2+1):(length(obj.SignalObj.Signal)));
+            
+            MATCED32('cedSendString','MEMDAC,?;');
+            chk = eval(MATCED32('cedGetString'));
+            drawnow;
+            
+            if chk==0 || chk==1
+               MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),0,dacOuth1);
+               MATCED32('cedSendString',['MEMDAC,I,2,0,' sz ',0,1,H,10,10;']);
+            elseif chk==2
+               MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),2*obj.SignalObj.DataLength,dacOuth2); %verif. start address!
+            end
+         end
       end
+      %Separate stim routine is currently obsolete:      
+%      function r = stim(obj,src,evt)
+%      
+%      end
    end
 end

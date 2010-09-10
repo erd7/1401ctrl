@@ -11,6 +11,8 @@ function r = e_1401DAC()
 %weiterhin: eigene Generatoren- und DACout- klasse!
 %grundsätzlich die gesamte headerklasse übergeben?
 %all Updateroutinen für Klassen (nicht allein abh. vom Construktor)?
+%Argumente in der initialisierungsfunktion grundsätzlich als erweiterbare strukturen, die im ganzen übergeben werden? (z.B. für weitere bedienelemente)
+%Implementieren (im zu implementierenden Optionsmenü mit pre sample data): um hostabhängige fehler abzufangen: increase datapacksize/ decrease sampling rate
 
 %--GLOBAL DATA STRUCTURES; accessible from every data encapsulation!
 %--> H: uicontrol class object handles (to be handled as application data)
@@ -45,29 +47,29 @@ function r = e_1401DAC()
             in1 = str2double(get(H.edit1,'String')) + 0.5;
             set(H.edit1,'String',num2str(in1));
       
-            GUIINPUT.UpdateInput(H.edit1,H.edit2);
+            GUIINPUT.UpdateInput(H.edit1,H.edit2,H.edit3);
          case 'UP2'
             in1 = str2double(get(H.edit2,'String')) + 1;
             set(H.edit2,'String',num2str(in1));
       
-            GUIINPUT.UpdateInput(H.edit1,H.edit2);
+            GUIINPUT.UpdateInput(H.edit1,H.edit2,H.edit3);
          case 'DWN1'
             in1 = str2double(get(H.edit1,'String')) - 0.5;
             set(H.edit1,'String',num2str(in1));
       
-            GUIINPUT.UpdateInput(H.edit1,H.edit2);
+            GUIINPUT.UpdateInput(H.edit1,H.edit2,H.edit3);
          case 'DWN2'
             in1 = str2double(get(H.edit2,'String')) - 1;
             set(H.edit2,'String',num2str(in1));
       
-            GUIINPUT.UpdateInput(H.edit1,H.edit2);
+            GUIINPUT.UpdateInput(H.edit1,H.edit2,H.edit3);
       end
    end
   
    %Intermediate callbacks:
    %(necessary due to definition error using direct function handle callback; seems to be ignored using an intermediate callback)
    function editcall(src,evt)
-      GUIINPUT.UpdateInput(H.edit1,H.edit2);
+      GUIINPUT.UpdateInput(H.edit1,H.edit2,H.edit3);
    end
 
    %temporary callbacks:
@@ -101,7 +103,7 @@ MATCED32('cedLdX','C:\power1401Lang\','MEMDAC','ADCMEM'); %Why load these cmds? 
    H.lbl2 = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
    H.edit1 = uicontrol('Style','edit','String','3.0','Position',[525,210,25,25],'BackgroundColor',[1,1,1],'Callback',@editcall); %User input 1; default value
    H.edit2 = uicontrol('Style','edit','String','1','Position',[525,240,25,25],'BackgroundColor',[1,1,1],'Callback',@editcall); %User input 2; default value
-   H.edit3 = uicontrol('Style','edit','String','0','Position',[525,180,75,25],'BackgroundColor',[1,1,1]); %User input 3; default value
+   H.edit3 = uicontrol('Style','edit','String','0','Position',[525,180,75,25],'BackgroundColor',[1,1,1],'Callback',@editcall); %User input 3; default value
    H.lbl3 = uicontrol('Style','text','String','AMP:','Position',[500,210,25,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
    H.lbl4 = uicontrol('Style','text','String','FRQ:','Position',[500,240,25,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
    H.lbl5 = uicontrol('Style','text','String','V','Position',[550,210,20,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);

@@ -25,7 +25,7 @@ classdef guiout < handle
          
          %Plot signal design:
          set(fig,'CurrentAxes',out2);
-         %obj.ComObj.GenSin(src1.Entry1,src1.Entry2); %Don't call; signal hast previously been generated during invocation!
+         %obj.ComObj.GenSin(src1.Entry1,src1.Entry2); %Don't call; signal has previously been generated during invocation of signalobject!
          vplot1 = obj.ComObj.Signal;
          plotdata1 = plot(vplot1,'Parent',gca);
          set(gca,'XLim',[0,40000],'YLim',[-5,5]);
@@ -36,7 +36,7 @@ classdef guiout < handle
          %Plot signal design:
          set(fig,'CurrentAxes',out2);         
          %vplot1 = obj.ComObj.GenSin(srcobj.Entry1,srcobj.Entry2);
-         obj.ComObj.GenSin(srcobj.Entry1,srcobj.Entry2);
+         obj.ComObj.GenSin(srcobj.Entry1,srcobj.Entry2,srcobj.Entry3);
          vplot1 = obj.ComObj.Signal;
          plotdata1 = plot(vplot1,'Parent',gca);
          set(gca,'XLim',[0,40000],'YLim',[-5,5]);
