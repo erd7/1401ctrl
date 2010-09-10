@@ -49,7 +49,7 @@ classdef togglecallback < handle
             if chk==0 || chk==1
                MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),0,dacOuth1);
                MATCED32('cedSendString',['MEMDAC,I,2,0,' sz ',0,1,H,10,10;']);
-            elseif chk==2
+            elseif chk==2 %Developing machine seems to be too slow to catch 1401 within status 2; try on faster hosts!
                MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),2*obj.SignalObj.DataLength,dacOuth2); %verif. start address!
             end
          end

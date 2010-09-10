@@ -5,16 +5,17 @@ function r = e_1401DAC()
 
 %TODO: entry (amp) max. 5volts/ min -5volts; mit offset vereinbaren! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
 %FRQ: Nach unten gegen 0, nach oben gegen unendlich (Max value?)
-%GESONDERTE gen_signal klasse mit GenSignal methode, da output und stim darauf zugreifen! redundanz verringern!
+%stets: Redundanzen verringern --> kommunizierende Objekte abkapseln!
+%PARADIGMA: output stets erst am Ende einer Verarbeitungskette benachrichtigen, sobald intern alles berechnet ist!
 %globale Datenstruktur für experimentelles Datenmaterial; Steuerdaten weiterhin objektorientiert handhaben
-%axes als teil der guiout klasse?
-%weiterhin: eigene Generatoren- und DACout- klasse!
-%grundsätzlich die gesamte headerklasse übergeben?
-%all Updateroutinen für Klassen (nicht allein abh. vom Construktor)?
+%DAC output als eigene klasse von togglecallback trennen? bisher nicht sinnvoll!
+%grundsätzlich die gesamte headerklasse/struktur übergeben?
+%Updateroutinen für alle Klassen (nicht allein abh. vom Construktor)?
 %Argumente in der initialisierungsfunktion grundsätzlich als erweiterbare strukturen, die im ganzen übergeben werden? (z.B. für weitere bedienelemente)
 %Implementieren (im zu implementierenden Optionsmenü mit pre sample data): um hostabhängige fehler abzufangen: increase datapacksize/ decrease sampling rate
+%--> neue appdata struktur: preferences!
 
-%--GLOBAL DATA STRUCTURES; accessible from every data encapsulation!
+%--GLOBAL DATA STRUCTURES; via appdata accessible from every data encapsulation!
 %--> H: uicontrol class object handles (to be handled as application data)
 %--> APPDAT: Application data
 
