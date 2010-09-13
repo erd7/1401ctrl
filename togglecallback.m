@@ -3,11 +3,14 @@ classdef togglecallback < handle
    properties (SetAccess = public, GetAccess = public)
       ListeningTo
       SignalObj
-      DacScale = 32768/5; %implement as input option in preferences struct; voltage scaling by DAC-units; CHECK "voltage resolution": note 16bit for -5V to +5V (--> 2^16/10 = 6553,6 as step width of 1V); --> divide by 10?
+      Prefs
+      Parent
+      DacScale = 2^16/10; %implement as device property in separate data holding class/struct; Voltage scaling by DAC units: voltage resolution is given by 16bit for a 10V range; thus 1V equals to 6553.6 DAC units/ minimum step width (resolution) is 1,53mV (1DAC unit)
    end
    methods
       %Constructor:
-      function obj = togglecallback(srcobj,srcobj2)
+      function obj = togglecallback(fig,srcobj,srcobj2)
+         obj.Parent = fig;
          obj.ListeningTo = srcobj;
          obj.SignalObj = srcobj2;
          
@@ -16,6 +19,10 @@ classdef togglecallback < handle
       end
       %Stimulation control and sampling routine:
       function StimCtrl(obj,src,evt)
+         %Initialize necessary cmds; INSTRUCTIONS ARE APPLIED BY SENDING STRINGS TO 1401; COMMANDS SEE LANGUAGE SUPPORT
+         obj.Prefs = getappdata(obj.Parent,'preferences');
+         MATCED32('cedLdX',obj.Prefs.langpath,'MEMDAC','ADCMEM');
+         
          chk = -1; %some initial value ~= 0,1,2,-128
          sz = int2str(2*obj.SignalObj.DataLength); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! why *2? --> PRÜFE MIT OSZI! see INTERACT: Buffersize 0-80k!
          

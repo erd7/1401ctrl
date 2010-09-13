@@ -34,7 +34,7 @@ classdef guiout < handle
       function UpdateOutput(obj,src,evt,srcobj,fig,out2)
          %Plot signal design:
          set(fig,'CurrentAxes',out2);         
-         obj.ComObj.GenSin(srcobj.Entry1,srcobj.Entry2,srcobj.Entry3);
+         obj.ComObj.GenSin(srcobj.UserInput.Entry1,srcobj.UserInput.Entry2,srcobj.UserInput.Entry3);
          plothandle = plot(obj.PlotScaleX,obj.ComObj.Signal,'Parent',gca);
          set(gca,'YLim',[-5,5]);
       end

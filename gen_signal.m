@@ -16,8 +16,8 @@ classdef gen_signal < handle
          obj.ListeningTo2 = src2;
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
-         addlistener(obj.ListeningTo1,'SelRadio1',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2,src2.Entry3));
-         addlistener(obj.ListeningTo1,'SelRadio2',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2,src2.Entry3));
+         addlistener(obj.ListeningTo1,'SelRadio1',@(src,evt)GenSin(obj,src,evt,src2.UserInput.Entry1,src2.UserInput.Entry2,src2.UserInput.Entry3));
+         addlistener(obj.ListeningTo1,'SelRadio2',@(src,evt)GenSin(obj,src,evt,src2.UserInput.Entry1,src2.UserInput.Entry2,src2.UserInput.Entry3));
          %Nur für das Event registrieren, wenn Reihenfolge VOR output update gesichert ist! eigenes event? oder immer aus updateroutine callen?
          %--> eigenes event scheint am sichersten, um Generator direkt vom dynamischen User Input abhängig zu machen
          %--> funktioniert noch nicht; KLÄRE!
@@ -25,7 +25,7 @@ classdef gen_signal < handle
          
          switch obj.SignalSelection
             case 1
-               obj.GenSin(src2.Entry1,src2.Entry2,src2.Entry3);
+               obj.GenSin(src2.UserInput.Entry1,src2.UserInput.Entry2,src2.UserInput.Entry3);
          end
       end
       function GenSin(obj,m,n,o)
