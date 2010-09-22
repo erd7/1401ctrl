@@ -52,6 +52,7 @@ PREFS = struct(...
 
    %Common callback for the arrowbuttons:
    function BUTTON_arrows(src,evt)
+      H = getappdata(H.main,'uihandles');
       switch get(src,'Tag')
          case 'UP1'
             in1 = str2double(get(H.edit1,'String')) + 0.5;
@@ -89,7 +90,7 @@ PREFS = struct(...
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   H.main = figure('Visible','off','Position',[0,0,625,325],'MenuBar','none');
+   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
    %H.main = figure('Visible','off','Position',[0,0,625,325],'MenuBar','none','CloseRequestFcn',@closereq);
    H.medit = uimenu(H.main,'Label','Edit');
    H.mprefs = uimenu(H.medit,'Label','Preferences','Callback',@prefcall);
@@ -103,32 +104,24 @@ PREFS = struct(...
    H.disp2 = axes('Units','Pixels','Position',[25,210,450,100],'Parent',H.main,'XLim',[0,40000],'YLim',[-5,5]);
    H.lbl1 = uicontrol('Style','text','String','Sampled signal:','Position',[50,175,100,15],'BackgroundColor',[0.8,0.8,0.8]);
    H.lbl2 = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
-   H.lbl3 = uicontrol('Style','text','String','AMP:','Position',[500,210,25,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-   H.lbl4 = uicontrol('Style','text','String','FRQ:','Position',[500,240,25,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-   H.lbl5 = uicontrol('Style','text','String','V','Position',[550,210,20,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-   H.lbl6 = uicontrol('Style','text','String','Hz','Position',[550,240,20,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-   H.lbl7 = uicontrol('Style','text','String','OFF:','Position',[500,180,25,15],'FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-   H.dwnarr1 = uicontrol('Style','pushbutton','CData',dwnicon,'Position',[575,210,25,12],'Tag','DWN1','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
-   H.uparr1 = uicontrol('Style','pushbutton','CData',upicon,'Position',[575,223,25,12],'Tag','UP1','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
-   H.dwnarr2 = uicontrol('Style','pushbutton','CData',dwnicon,'Position',[575,240,25,12],'Tag','DWN2','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
-   H.uparr2 = uicontrol('Style','pushbutton','CData',upicon,'Position',[575,253,25,12],'Tag','UP2','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
+   %H.dwnarr1 = uicontrol('Style','pushbutton','CData',dwnicon,'Position',[575,210,25,12],'Tag','DWN1','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
+   %H.uparr1 = uicontrol('Style','pushbutton','CData',upicon,'Position',[575,222,25,12],'Tag','UP1','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
+   %H.dwnarr2 = uicontrol('Style','pushbutton','CData',dwnicon,'Position',[575,240,25,12],'Tag','DWN2','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
+   %H.uparr2 = uicontrol('Style','pushbutton','CData',upicon,'Position',[575,252,25,12],'Tag','UP2','BackgroundColor',[0.8,0.8,0.8],'Callback',@BUTTON_arrows);
    
    %Set application data:
    setappdata(H.main,'uihandles',H);
    setappdata(H.main,'preferences',PREFS);
    
    %Invoke GUI class objects:
-   TOGGLEBTTN = togglebutton(H.main,[225,15,50,25],'SAMPLE');
-   MAININPUT = input.maininput(H.main);
-   RADIOGRP = radiobuttongrp(H.main,[0.8,0.85,0.16,0.1],'SIN','SIN');
+   TOGGLEBTTN = togglebutton(H,[225,15,50,25],'SAMPLE');
+   RADIOGRP = radiobuttongrp(H,[0.738,0.85,0.16,0.1],'SIN','CC');
+   MAININPUT = input.maininput(H,RADIOGRP);
    
    %Update from application data:
    H = getappdata(H.main,'uihandles');
    
-   %Rearrange components:
-   align([H.lbl3,H.lbl5,H.edit1],'VerticalAlignment','Middle');
-   align([H.lbl4,H.lbl6,H.edit2],'VerticalAlignment','Middle');
-   align([H.lbl7,H.edit3],'VerticalAlignment','Middle');
+   %Rearrange components: //local
    
 %--power1401 STARTUP
 power1401startup();
@@ -145,8 +138,8 @@ power1401startup();
    
    %Invoke instances of control classes:
    %GUIINPUT = userinput(H.edit1,H.edit2,H.edit3);
-   SIGNAL = gen_signal(RADIOGRP,MAININPUT);
-   CALLINOUT = guiout(MAININPUT,SIGNAL,H.main,H.disp2);
+   SIGNAL = gen_signal(MAININPUT);
+   CALLINOUT = guiout(SIGNAL,H.main,H.disp2);
    CALLTOGGLE = togglecallback(H.main,TOGGLEBTTN,SIGNAL);
    
 %--program run control: return 1 since all done:

@@ -10,23 +10,19 @@ classdef guiout < handle
    end
    methods
       %Constructor:
-      function obj = guiout(src1,src2,fig,out2)
+      function obj = guiout(src1,fig,out2)
          obj.ListeningTo = src1;
-         obj.ComObj = src2;
          obj.ParentFigure = fig;
          obj.Monitor2 = out2;
          
          %prüfe: src hier direkt nutzen?
-         addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo,obj.ParentFigure,obj.Monitor2));
+         addlistener(obj.ListeningTo,'NewCalcAlert',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo,obj.ParentFigure,obj.Monitor2));
          %addlistener(obj.ListeningTo,'ToggleOn',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo));
          %addlistener(obj.ListeningTo,'ToggleOff',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo));
          
-         %src.UpdateInput(...
-         
          %Plot signal design:
          set(fig,'CurrentAxes',out2);
-         %obj.ComObj.GenSin(src1.Entry1,src1.Entry2,src1.Entry3); %Don't call; signal has previously been generated during invocation of gen_signal object!
-         plothandle = plot(obj.PlotScaleX,obj.ComObj.Signal,'Parent',gca);
+         plothandle = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
          set(gca,'YLim',[-5,5]);
       end
    end
@@ -34,8 +30,7 @@ classdef guiout < handle
       function UpdateOutput(obj,src,evt,srcobj,fig,out2)
          %Plot signal design:
          set(fig,'CurrentAxes',out2);         
-         obj.ComObj.GenSin(srcobj.UserInput.Entry1,srcobj.UserInput.Entry2,srcobj.UserInput.Entry3);
-         plothandle = plot(obj.PlotScaleX,obj.ComObj.Signal,'Parent',gca);
+         plothandle = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
          set(gca,'YLim',[-5,5]);
       end
    end

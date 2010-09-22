@@ -1,3 +1,4 @@
+%Implementation of preferences GUI input class as userinput subclass
 classdef prefinput < input.userinput
    properties
       Parent

@@ -21,6 +21,7 @@ classdef togglecallback < handle
       function StimCtrl(obj,src,evt)
          %Initialize necessary cmds; INSTRUCTIONS ARE APPLIED BY SENDING STRINGS TO 1401; COMMANDS SEE LANGUAGE SUPPORT
          obj.Prefs = getappdata(obj.Parent,'preferences');
+         MATCED32('cedSendString','CLEAR');
          MATCED32('cedLdX',obj.Prefs.langpath,'MEMDAC','ADCMEM');
          
          chk = -1; %some initial value ~= 0,1,2,-128

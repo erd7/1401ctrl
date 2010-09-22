@@ -56,10 +56,6 @@ classdef maininput < input.userinput
                align([obj.Hloc.lbl1,obj.Hloc.edit1],'VerticalAlignment','Middle');
                align([obj.Hloc.lbl2,obj.Hloc.edit2],'VerticalAlignment','Middle');
                align([obj.Hloc.lbl3,obj.Hloc.edit3],'VerticalAlignment','Middle');
-               
-               obj.InputState = 1;
-               obj.UpdateInput();
-               notify(obj,'NewInputAlert');
             end
          elseif mod == 2
             if isfield(obj.Hloc,{'edit1','edit2','edit3','lbl1','lbl2','lbl3'}) == 1
@@ -75,10 +71,6 @@ classdef maininput < input.userinput
                
                %Rearrange graphic components:
                align([obj.Hloc.lbl,obj.Hloc.edit],'VerticalAlignment','Middle');
-               
-               obj.InputState = 2;
-               obj.UpdateInput();
-               notify(obj,'NewInputAlert');
             end
          end
       end
@@ -89,6 +81,7 @@ classdef maininput < input.userinput
             obj.UserInput.Entry1 = str2double(get(Hloc.edit1,'String'));
             obj.UserInput.Entry2 = str2double(get(Hloc.edit2,'String'));
             obj.UserInput.Entry3 = str2double(get(Hloc.edit3,'String'));
+            obj.Input
          elseif isfield(obj.Hloc,{'edit','lbl'}) == 1
             obj.UserInput.Entry1 = str2double(get(Hloc.edit,'String'));
          end

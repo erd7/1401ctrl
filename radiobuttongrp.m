@@ -16,8 +16,8 @@ classdef radiobuttongrp < handle
    end
    methods
       %Constructor: //Use position: [0.8,0.85,0.16,0.1] (testing)
-      function obj = radiobuttongrp(head,pos,lbl1,lbl2)
-         Hloc = getappdata(head,'uihandles');
+      function obj = radiobuttongrp(h,pos,lbl1,lbl2)
+         Hloc = getappdata(h.main,'uihandles');
          obj.ContainerPosition = pos;
          obj.ButtonString1 = lbl1;
          obj.ButtonString2 = lbl2;
@@ -27,7 +27,7 @@ classdef radiobuttongrp < handle
          obj.RadioHandle1 = Hloc.radio1;
          Hloc.radio2 = uicontrol('Style','Radio','String',lbl2,'pos',[50,8,40,15],'BackgroundColor',[0.8,0.8,0.8],'parent',obj.ContainerHandle,'Selected','off');
          obj.RadioHandle2 = Hloc.radio2;
-         setappdata(head,'uihandles',Hloc);
+         setappdata(h.main,'uihandles',Hloc);
          
          %Following block probably reducible:         
          if get(obj.RadioHandle1,'Value') == get(obj.RadioHandle1,'Max') && get(obj.RadioHandle2,'Value') == get(obj.RadioHandle2,'Min')
