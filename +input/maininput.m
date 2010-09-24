@@ -95,5 +95,18 @@ classdef maininput < input.userinput
          
          notify(obj,'NewInputAlert');
       end
+      %Destructor:
+      function delete(obj)
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.edit1);
+         delete(Hloc.edit2);
+         delete(Hloc.edit3);
+         delete(Hloc.lbl1);
+         delete(Hloc.lbl2);
+         delete(Hloc.lbl3);
+         Hloc = rmfield(Hloc,{'edit1','edit2','edit3'});
+         Hloc = rmfield(Hloc,{'lbl1','lbl2','lbl3'});
+         setappdata(obj.Parent,'uihandles',Hloc);
+      end
    end
 end

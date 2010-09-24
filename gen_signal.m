@@ -1,6 +1,7 @@
 %Signal data array generation class
 classdef gen_signal < handle
    properties
+      Parent
       ListeningTo
       %ListeningTo2
       Signal
@@ -11,9 +12,10 @@ classdef gen_signal < handle
    end
    methods
       %Constructor:
-      function obj = gen_signal(src1)
+      function obj = gen_signal(h,src1)
          %nach Fertigstellung der Radiobuttongroup hier feststellen des selektierten Radiobuttons; zunächst Standardwert für SignalSelection
          %Radiogroup sendet event --> Update der Signalarrays!
+         obj.Parent = h.main;
          obj.ListeningTo = src1;
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
@@ -42,6 +44,9 @@ classdef gen_signal < handle
          datarray = 0:(obj.DataLength-1);
          
          obj.Signal = m*(datarray*0+1);
+      end
+      %Destructor:
+      function delete(obj)
       end
    end
 end

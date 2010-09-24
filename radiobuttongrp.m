@@ -9,6 +9,7 @@ classdef radiobuttongrp < handle
       ContainerPosition
       ButtonString1
       ButtonString2
+      Parent
    end
    events
       SelRadio1
@@ -17,6 +18,7 @@ classdef radiobuttongrp < handle
    methods
       %Constructor: //Use position: [0.8,0.85,0.16,0.1] (testing)
       function obj = radiobuttongrp(h,pos,lbl1,lbl2)
+         obj.Parent = h.main;
          Hloc = getappdata(h.main,'uihandles');
          obj.ContainerPosition = pos;
          obj.ButtonString1 = lbl1;
@@ -53,6 +55,17 @@ classdef radiobuttongrp < handle
             obj.RadioState2 = 0;
             notify(obj,'SelRadio1');
          end
+      end
+      %Destructor:
+      function delete(obj)
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.radio1);
+         delete(Hloc.radio2);
+         delete(Hloc.radiogrp);
+         Hloc = rmfield(Hloc,'radiogrp');
+         Hloc = rmfield(Hloc,'radio1');
+         Hloc = rmfield(Hloc,'radio2');
+         setappdata(obj.Parent,'uihandles',Hloc);
       end
    end
 end

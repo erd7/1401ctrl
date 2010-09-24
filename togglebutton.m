@@ -4,6 +4,7 @@ classdef togglebutton < handle
       ButtonHandle
       ButtonPosition
       ButtonString
+      Parent
    end
    events
       ToggleOn
@@ -12,6 +13,7 @@ classdef togglebutton < handle
    methods
       %Constructor: //Use position: [225,15,50,25]
       function obj = togglebutton(h,pos,lbl)
+         obj.Parent = h.main;
          Hloc = getappdata(h.main,'uihandles');
          obj.ButtonPosition = pos;
          obj.ButtonString = lbl;
@@ -36,6 +38,13 @@ classdef togglebutton < handle
             notify(obj,'ToggleOff')
          end
       end
+      %Destructor:
+      function delete(obj)
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.toggle);
+         Hloc = rmfield(Hloc,'toggle');
+         setappdata(obj.Parent,'uihandles',Hloc);
+      end         
    end
 end
          
