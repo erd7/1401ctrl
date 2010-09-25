@@ -57,9 +57,16 @@ classdef togglecallback < handle
             
             if chk==0 || chk==1
                MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),0,dacOuth1);
-               MATCED32('cedSendString',['MEMDAC,I,2,0,' sz ',0,1,H,10,10;']); %does cmd force start of sampling? edit cycle initiation if true!
+               while chk == 1
+                  %Waiting...
+                  MATCED32('cedSendString','MEMDAC,?;');
+                  chk = eval(MATCED32('cedGetString'));
+                  drawnow;
+               end
+               MATCED32('cedSendString',['MEMDAC,I,2,0,' sz ',0,1,H,10,10;']); %CMD forces start of sampling --> waiting loop; RECONSIDER!
             elseif chk==-128 %Developing machine seems to be too slow to catch 1401 within status 2; try on faster hosts!
-               MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),2*obj.SignalObj.DataLength,dacOuth2); %verif. start address!
+               MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),obj.SignalObj.DataLength,dacOuth2); %verif. start address!
+               %MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),40000,dacOuth2);
             end
          end
       end

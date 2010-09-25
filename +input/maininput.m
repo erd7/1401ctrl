@@ -1,80 +1,103 @@
 %Implementation of main GUI input class as userinput subclass
+%Code reusable due to initialization arguments
 classdef maininput < input.userinput
    properties
       Parent
       ListeningTo
-      Hloc %am besten herausnehmen und nur über appdata zugreifen!
-      InputState = 1;
+      InputState
+      IniData
    end
    methods
       %Constructor:
-      function obj = maininput(h,src1)
+      function obj = maininput(h,src1,pedit,plbl,pevt)
          obj.Parent = h.main;
          obj.ListeningTo = src1;
-         obj.Hloc = getappdata(obj.Parent,'uihandles');
+         obj.InputState = pevt(1);
+         obj.IniData = struct('pedit',{pedit},'plbl',{plbl},'pevt',{pevt});
+         Hloc = getappdata(obj.Parent,'uihandles');
          
-         obj.Hloc.edit1 = uicontrol('Style','edit','String','3.0','Position',[550,210,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
-         obj.Hloc.edit2 = uicontrol('Style','edit','String','1','Position',[550,240,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 2; default value
-         obj.Hloc.edit3 = uicontrol('Style','edit','String','0','Position',[550,180,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 3; default value
-         obj.Hloc.lbl1 = uicontrol('Style','text','String','AMP (V):','Position',[500,210,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-         obj.Hloc.lbl2 = uicontrol('Style','text','String','FRQ (Hz):','Position',[500,240,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-         obj.Hloc.lbl3 = uicontrol('Style','text','String','OFF:','Position',[500,180,25,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-         setappdata(obj.Parent,'uihandles',obj.Hloc);
+         for i=1:length(pedit{1}(:,1))
+            stredit = ['edit',num2str(i)];
+            strEntry = ['Entry',num2str(i)];
+         
+            Hloc.(stredit) = uicontrol('Style','edit','String',pedit{2}(i,:),'Position',pedit{1}(i,:),'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt));
+            
+            obj.UserInput.(strEntry) = str2double(get(Hloc.(stredit),'String'));
+         end
+         
+         for i=1:length(plbl{1}(:,1))
+            strlbl = ['lbl',num2str(i)];
+            
+            Hloc.(strlbl) = uicontrol('Style','text','String',plbl{2}{i,:},'Position',plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+         end
+         
+         setappdata(obj.Parent,'uihandles',Hloc);
          
          %Rearrange graphic components:
-         align([obj.Hloc.lbl1,obj.Hloc.edit1],'VerticalAlignment','Middle');
-         align([obj.Hloc.lbl2,obj.Hloc.edit2],'VerticalAlignment','Middle');
-         align([obj.Hloc.lbl3,obj.Hloc.edit3],'VerticalAlignment','Middle');
+         for i=1:length(pedit{1}(:,1))
+            stredit = ['edit',num2str(i)];
+            strlbl = ['lbl',num2str(i)];
+            
+            align([Hloc.(strlbl),Hloc.(stredit)],'VerticalAlignment','Middle');
+         end
          
-         obj.UserInput.Entry1 = str2double(get(obj.Hloc.edit1,'String'));
-         obj.UserInput.Entry2 = str2double(get(obj.Hloc.edit2,'String'));
-         obj.UserInput.Entry3 = str2double(get(obj.Hloc.edit3,'String'));
+         notify(obj,'NewInputAlert');
          
-         notify(obj,'NewInputAlert'); %probably redundant
-         
-         addlistener(obj.ListeningTo,'SelRadio1',@(src,evt)RefreshGUI(obj,src,evt,1));
-         addlistener(obj.ListeningTo,'SelRadio2',@(src,evt)RefreshGUI(obj,src,evt,2));
+         if pevt(2) == 1;
+            addlistener(obj.ListeningTo,'SelRadio1',@(src,evt)RefreshGUI(obj,src,evt,1));
+            addlistener(obj.ListeningTo,'SelRadio2',@(src,evt)RefreshGUI(obj,src,evt,2));
+         end
       end
-      function RefreshGUI(obj,src,evt,mod)
+      %Following fct. is only called if object is registered for radio event; in this case edit code for individual reuse!
+      function RefreshGUI(obj,src,evt,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
          if mod == 1
-            if isfield(obj.Hloc,{'edit','lbl'}) == 1
-               obj.Hloc = getappdata(obj.Parent,'uihandles');
-               tmp = [obj.Hloc.edit,obj.Hloc.lbl];
-               obj.Hloc = rmfield(obj.Hloc,{'edit','lbl'});
-               setappdata(obj.Parent,'uihandles',obj.Hloc);
+            Hloc = getappdata(obj.Parent,'uihandles');
+            if isfield(Hloc,{'edit','lbl'}) == 1
+               tmp = [Hloc.edit,Hloc.lbl];
+               Hloc = rmfield(Hloc,{'edit','lbl'});
+               setappdata(obj.Parent,'uihandles',Hloc);
                delete(tmp); %Handles erst hinterher bearbeiten und updaten?
                
-               obj.Hloc.edit1 = uicontrol('Style','edit','String','3.0','Position',[550,210,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
-               obj.Hloc.edit2 = uicontrol('Style','edit','String','1','Position',[550,240,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 2; default value
-               obj.Hloc.edit3 = uicontrol('Style','edit','String','0','Position',[550,180,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 3; default value
-               obj.Hloc.lbl1 = uicontrol('Style','text','String','AMP (V):','Position',[500,210,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-               obj.Hloc.lbl2 = uicontrol('Style','text','String','FRQ (Hz):','Position',[500,240,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-               obj.Hloc.lbl3 = uicontrol('Style','text','String','OFF:','Position',[500,180,25,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-               setappdata(obj.Parent,'uihandles',obj.Hloc);
+               for i=1:length(obj.IniData.pedit{1}(:,1))
+                  stredit = ['edit',num2str(i)];
          
+                  Hloc.(stredit) = uicontrol('Style','edit','String',obj.IniData.pedit{2}(i,:),'Position',obj.IniData.pedit{1}(i,:),'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt));
+               end
+         
+               for i=1:length(obj.IniData.plbl{1}(:,1))
+                  strlbl = ['lbl',num2str(i)];
+            
+                  Hloc.(strlbl) = uicontrol('Style','text','String',obj.IniData.plbl{2}{i,:},'Position',obj.IniData.plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+               end
+         
+               setappdata(obj.Parent,'uihandles',Hloc);
+               
                %Rearrange graphic components:
-               align([obj.Hloc.lbl1,obj.Hloc.edit1],'VerticalAlignment','Middle');
-               align([obj.Hloc.lbl2,obj.Hloc.edit2],'VerticalAlignment','Middle');
-               align([obj.Hloc.lbl3,obj.Hloc.edit3],'VerticalAlignment','Middle');
+                  for i=1:length(obj.IniData.pedit{1}(:,1))
+                     stredit = ['edit',num2str(i)];
+                     strlbl = ['lbl',num2str(i)];
+            
+                     align([Hloc.(strlbl),Hloc.(stredit)],'VerticalAlignment','Middle');
+                  end
                
                obj.InputState = 1;
                obj.UpdateInput();
                notify(obj,'NewInputAlert');
             end
          elseif mod == 2
-            if isfield(obj.Hloc,{'edit1','edit2','edit3','lbl1','lbl2','lbl3'}) == 1
-               obj.Hloc = getappdata(obj.Parent,'uihandles');
-               tmp = [obj.Hloc.edit1,obj.Hloc.edit2,obj.Hloc.edit3,obj.Hloc.lbl1,obj.Hloc.lbl2,obj.Hloc.lbl3];
-               obj.Hloc = rmfield(obj.Hloc,{'edit1','edit2','edit3','lbl1','lbl2','lbl3'});
-               setappdata(obj.Parent,'uihandles',obj.Hloc);
+            Hloc = getappdata(obj.Parent,'uihandles');
+            if isfield(Hloc,{'edit1','edit2','edit3','lbl1','lbl2','lbl3'}) == 1
+               tmp = [Hloc.edit1,Hloc.edit2,Hloc.edit3,Hloc.lbl1,Hloc.lbl2,Hloc.lbl3];
+               Hloc = rmfield(Hloc,{'edit1','edit2','edit3','lbl1','lbl2','lbl3'});
+               setappdata(obj.Parent,'uihandles',Hloc);
                delete(tmp);
                
-               obj.Hloc.edit = uicontrol('Style','edit','String','1','Position',[550,240,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt));
-               obj.Hloc.lbl = uicontrol('Style','text','String','VOLT (V):','Position',[500,240,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
-               setappdata(obj.Parent,'uihandles',obj.Hloc);
+               Hloc.edit = uicontrol('Style','edit','String','1','Position',[550,240,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt));
+               Hloc.lbl = uicontrol('Style','text','String','VOLT (V):','Position',[500,240,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+               setappdata(obj.Parent,'uihandles',Hloc);
                
                %Rearrange graphic components:
-               align([obj.Hloc.lbl,obj.Hloc.edit],'VerticalAlignment','Middle');
+               align([Hloc.lbl,Hloc.edit],'VerticalAlignment','Middle');
                
                obj.InputState = 2;
                obj.UpdateInput();
@@ -85,11 +108,18 @@ classdef maininput < input.userinput
       function UpdateInput(obj,src,evt)
          Hloc = getappdata(obj.Parent,'uihandles');
          
-         if isfield(obj.Hloc,{'edit1','edit2','edit3','lbl1','lbl2','lbl3'}) == 1
-            obj.UserInput.Entry1 = str2double(get(Hloc.edit1,'String'));
-            obj.UserInput.Entry2 = str2double(get(Hloc.edit2,'String'));
-            obj.UserInput.Entry3 = str2double(get(Hloc.edit3,'String'));
-         elseif isfield(obj.Hloc,{'edit','lbl'}) == 1
+         for i=1:length(obj.IniData.pedit{1}(:,1))
+            fieldlist{i} = ['edit',num2str(i)];
+         end
+         
+         if isfield(Hloc,fieldlist) == 1
+            for i=1:length(obj.IniData.pedit{1}(:,1))
+               stredit = ['edit',num2str(i)];
+               strEntry = ['Entry',num2str(i)];            
+               
+               obj.UserInput.(strEntry) = str2double(get(Hloc.(stredit),'String'));
+            end
+         elseif isfield(Hloc,{'edit','lbl'}) == 1 %Matters only if object is registered for radio event; reconsider for reuse!
             obj.UserInput.Entry1 = str2double(get(Hloc.edit,'String'));
          end
          
@@ -98,14 +128,26 @@ classdef maininput < input.userinput
       %Destructor:
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');
-         delete(Hloc.edit1);
-         delete(Hloc.edit2);
-         delete(Hloc.edit3);
-         delete(Hloc.lbl1);
-         delete(Hloc.lbl2);
-         delete(Hloc.lbl3);
-         Hloc = rmfield(Hloc,{'edit1','edit2','edit3'});
-         Hloc = rmfield(Hloc,{'lbl1','lbl2','lbl3'});
+         
+         for i=1:length(obj.IniData.pedit{1}(:,1))
+            fieldlist{i} = ['edit',num2str(i)];
+         end
+         
+         if isfield(Hloc,fieldlist) == 1
+            for i=1:length(obj.IniData.pedit{1}(:,1))
+               stredit = ['edit',num2str(i)];
+               strlbl = ['lbl',num2str(i)];            
+               
+               delete(Hloc.(stredit));
+               delete(Hloc.(strlbl));
+               Hloc = rmfield(Hloc,stredit);
+               Hloc = rmfield(Hloc,strlbl);
+            end
+         elseif isfield(Hloc,{'edit','lbl'}) == 1 %Matters only if object is registered for radio event; reconsider for reuse!
+            delete([Hloc.edit,Hloc.lbl]);
+            Hloc = rmfield(Hloc,{'edit','lbl'});
+         end
+
          setappdata(obj.Parent,'uihandles',Hloc);
       end
    end

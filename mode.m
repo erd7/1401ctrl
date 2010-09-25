@@ -25,16 +25,28 @@ classdef mode < handle
       function ToolCall(obj,src,evt,h) %s.a. Lösungsvariante in maininput
          Hloc = getappdata(h.main,'uihandles');         
          if str2double(get(src,'UserData')) == 1
+            %Initialisation options:
+            iniedit =...
+               {[550,180,25,25;...
+               550,210,25,25;...
+               550,240,25,25],...
+               [2;1.5;10]};
+            inilbl =...
+               {[500,180,50,15;...
+               500,210,50,15;...
+               500,240,50,15],...
+               {'OFF:';'AMP (V):';'FRQ (Hz):'}};
+            inievt = [1,1];
             
             %Invoke GUI class objects:
             TOGGLEBTTN = togglebutton(Hloc,[225,15,50,25],'SAMPLE');
             RADIOGRP = radiobuttongrp(Hloc,[0.738,0.85,0.16,0.1],'SIN','CC');
    
-            %Invoke instances of control classes (with private GUI elements):
-            MAININPUT = input.maininput(Hloc,RADIOGRP);
+            %Invoke instances of control classes (with private GUI elements due to user interface function):
+            MAININPUT = input.maininput(Hloc,RADIOGRP,iniedit,inilbl,inievt);
             SIGNAL = gen_signal(Hloc,MAININPUT);
             CALLINOUT = guiout(SIGNAL,Hloc);
-            CALLTOGGLE = togglecallback(Hloc.main,TOGGLEBTTN,SIGNAL);
+            CALLTOGGLE = togglecallback(Hloc.main,TOGGLEBTTN,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse? --> obj-handle- sammelstruktur nötig!
             
             APPDATloc = getappdata(Hloc.main,'appdata');
             APPDATloc.CURRENTOBJ = {TOGGLEBTTN,RADIOGRP,MAININPUT,SIGNAL,CALLINOUT,CALLTOGGLE};

@@ -29,9 +29,11 @@ classdef gen_signal < handle
       end
       function GenSignal(obj,src1)
          if obj.ListeningTo.InputState == 1
-            obj.GenSin(src1.Entry1,src1.Entry2,src1.Entry3);
+            obj.GenSin(src1.Entry2,src1.Entry3,src1.Entry1);
          elseif obj.ListeningTo.InputState == 2
             obj.GenConst(src1.Entry1);
+         elseif obj.ListeningTo.InputState == 3
+            %objGenNoiseSq
          end
          notify(obj,'NewCalcAlert');
       end
@@ -44,6 +46,16 @@ classdef gen_signal < handle
          datarray = 0:(obj.DataLength-1);
          
          obj.Signal = m*(datarray*0+1);
+      end
+      function GenNoiseSq(obj,steps)
+         z = ([1:2400000]*0)+1; %Still assume, that sample rate is 40kHz //Split, if signal is too long! --> one minute sequence!
+                  
+         for i=1:steps
+            strlvl = ['lvl',num2str(i)];
+            NSIG.(strlvl) = awgn(z,(40-10*(i-1)),'measured')-1;
+         end
+         
+         obj.Signal = orderfields(NSIG,randperm(steps));
       end
       %Destructor:
       function delete(obj)

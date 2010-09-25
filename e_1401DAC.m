@@ -21,15 +21,17 @@ function r = e_1401DAC()
 %Interaktionsdiagramm für Objekte auf allen ebenen entwickeln --> Programmlogik!
 %PRINZIP: Handle struct stets vollständig übergeben- aus entwicklungstechnischen gründen (z.B. für debugging) zusätzlich handle appdate mitführen!
 %PRINZIP: APPDATA NIEMALS INNERHALB EINER ÜBERGEORDNETEN ROUTINE UPDATEN, NACHDEM IN SUBROUTINEN GEUPDATET WURDE!
+% --> stets auf individuelle gfx obj handlevars achten!
 %nota: nicht unkritisch variablen globalisieren, indem sie als object property deklariert werden!
+%--> noch unstimmigkeit im main closerq!
 
 %--GLOBAL DATA STRUCTURES; via appdata accessible from every data encapsulation!
 %--> H: Stores uicontrol class object handles (to be handled as application data)
 %--> APPDAT: Application data; default values
 %--> PREFS: Preferences; default values
 APPDAT = struct(...
-   'Researcher','Default Researcher',...
-   'Subject','Unnamed');
+   'researcher','Default Researcher',...
+   'subject','Unnamed');
 
 PREFS = struct(...
    'langpath','C:\power1401Lang\',...
@@ -81,7 +83,11 @@ power1401startup();
    %Intermediate callbacks:
    %(necessary due to definition error using direct function handle callback; seems to be ignored using an intermediate callback)
    function prefcall(src,evt)
-      PREFGUI = prefgui(H.main);
+      PREFGUI = prefgui(H);
+   end
+
+   function sesscall(src,evt)
+      SESSGUI = sessgui(H);
    end
 
 %--INITIALIZATION PROCEDURE
@@ -89,6 +95,9 @@ power1401startup();
    %Create main GUI:
    H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
    %H.main = figure('Visible','off','Position',[0,0,625,325],'MenuBar','none','CloseRequestFcn',@closereq);
+   H.mfile = uimenu(H.main,'Label','File');
+   H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
+   %H.msubj = uimenu(H.mfile,'Label','Subject');
    H.medit = uimenu(H.main,'Label','Edit');
    H.mprefs = uimenu(H.medit,'Label','Preferences','Callback',@prefcall);
    

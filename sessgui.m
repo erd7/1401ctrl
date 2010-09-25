@@ -1,31 +1,31 @@
-%Class builds user options-GUI; object is being destroyed explicitly on close request (prefs data management through global struct)
-classdef prefgui < handle
+%Class builds session settings-GUI; object is being destroyed explicitly on close request (sess data management through global struct)
+classdef sessgui < handle
    properties
       Parent
       Prefs
    end
    methods
-      %Constructor: //Initialize user options GUI & load default preferences
-      function obj = prefgui(h)
+      %Constructor: //Initialize session settings GUI & load default values
+      function obj = sessgui(h)
          obj.Parent = h.main;
          Hloc = getappdata(obj.Parent,'uihandles');
          
          %Invoke GUI:
-         Hloc.pref = figure('Visible','off','Position',[0,0,400,400],'MenuBar','none','Resize','off','Name','Preferences','CloseRequestFcn',@(src,evt)CloseReq(obj,src,evt));
+         Hloc.sess = figure('Visible','off','Position',[0,0,400,400],'MenuBar','none','Resize','off','Name','Session Settings','CloseRequestFcn',@(src,evt)CloseReq(obj,src,evt));
          setappdata(obj.Parent,'uihandles',Hloc);
          
          %Build local GUI elements: //here new concrete class prefinput!
-         PREFINPUT = input.prefinput(Hloc); %auch manuell zerstören?
+         SESSINPUT = input.sessinput(Hloc); %auch manuell zerstören?
          
-         movegui(Hloc.pref,'center');
-         set(Hloc.pref,'Visible','on');
+         movegui(Hloc.sess,'center');
+         set(Hloc.sess,'Visible','on');
       end
       %Internal close request callback:
       function CloseReq(obj,src,evt)
-         %Hier am besten PREFS update!
+         %Hier am besten APPDATA update!
          Hloc = getappdata(obj.Parent,'uihandles');
-         fig = Hloc.pref;
-         Hloc = rmfield(Hloc,{'pref','lblp1'});
+         fig = Hloc.sess;
+         Hloc = rmfield(Hloc,{'sess','lbls1'});
          setappdata(obj.Parent,'uihandles',Hloc);
          
          delete(fig); %Destroy graphic handle object: figure; all uicontrol objects are deleted automatically
