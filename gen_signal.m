@@ -3,20 +3,20 @@ classdef gen_signal < handle
    properties
       Parent
       ListeningTo
-      %ListeningTo2
       Signal
-      DataLength = 40000;
+      DataLength
    end
    events
       NewCalcAlert
    end
    methods
       %Constructor:
-      function obj = gen_signal(h,src1)
+      function obj = gen_signal(h,src1,dat)
          %nach Fertigstellung der Radiobuttongroup hier feststellen des selektierten Radiobuttons; zunächst Standardwert für SignalSelection
          %Radiogroup sendet event --> Update der Signalarrays!
          obj.Parent = h.main;
          obj.ListeningTo = src1;
+         obj.DataLength = dat;
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
          addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)GenSignal(obj,obj.ListeningTo.UserInput));
@@ -28,13 +28,15 @@ classdef gen_signal < handle
          obj.GenSignal(src1.UserInput);
       end
       function GenSignal(obj,src1)
-         if obj.ListeningTo.InputState == 1
-            obj.GenSin(src1.Entry2,src1.Entry3,src1.Entry1);
-         elseif obj.ListeningTo.InputState == 2
-            obj.GenConst(src1.Entry1);
-         elseif obj.ListeningTo.InputState == 3
-            %objGenNoiseSq
+         switch obj.ListeningTo.InputState
+            case 1
+               obj.GenSin(src1.Entry2,src1.Entry3,src1.Entry1);
+            case 2
+               obj.GenConst(src1.Entry1);
+            case 3
+               obj.GenNoiseSq(src1.Entry1,src1.Entry2,src1.Entry3);
          end
+         
          notify(obj,'NewCalcAlert');
       end
       function GenSin(obj,m,n,o)
@@ -47,15 +49,22 @@ classdef gen_signal < handle
          
          obj.Signal = m*(datarray*0+1);
       end
-      function GenNoiseSq(obj,steps)
-         z = ([1:2400000]*0)+1; %Still assume, that sample rate is 40kHz //Split, if signal is too long! --> one minute sequence!
-                  
+      function GenNoiseSq(obj,dur,steps,subdiv)
+         z = ([1:dur*40000]*0)+1; %Still assume, that sample rate is 40kHz //Split, if signal is too long! --> one minute sequence!
+   
          for i=1:steps
             strlvl = ['lvl',num2str(i)];
             NSIG.(strlvl) = awgn(z,(40-10*(i-1)),'measured')-1;
+            
+            for j=1:subdiv %Make subdivisions depend on user input!
+               strsublvl = ['lvl',num2str(i),'_',num2str(j)];
+               NSIG.(strsublvl) = NSIG.(strlvl)(1+400000*(j-1):400000*(j));
+            end
+   
+            NSIG = rmfield(NSIG,strlvl);
          end
          
-         obj.Signal = orderfields(NSIG,randperm(steps));
+         obj.Signal = orderfields(NSIG,randperm(steps*subdiv));
       end
       %Destructor:
       function delete(obj)

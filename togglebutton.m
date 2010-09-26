@@ -11,7 +11,7 @@ classdef togglebutton < handle
       ToggleOff
    end
    methods
-      %Constructor: //Use position: [225,15,50,25]
+      %Constructor:
       function obj = togglebutton(h,pos,lbl)
          obj.Parent = h.main;
          Hloc = getappdata(h.main,'uihandles');

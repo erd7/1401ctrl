@@ -24,6 +24,7 @@ function r = e_1401DAC()
 % --> stets auf individuelle gfx obj handlevars achten!
 %nota: nicht unkritisch variablen globalisieren, indem sie als object property deklariert werden!
 %--> noch unstimmigkeit im main closerq!
+%--> ERSTELLE GRUNDSÄTZLICH WIEDERVERWENDBARE IMPLEMENTIERUNGSKLASSEN; ENTSPRECHENDE OBERKLASSEN --> VERW. IN SUBKLASSEN AUCH OBERKLASSEN KONSTRUKTOREN UND VARIABLES ARGUMENT!
 
 %--GLOBAL DATA STRUCTURES; via appdata accessible from every data encapsulation!
 %--> H: Stores uicontrol class object handles (to be handled as application data)
