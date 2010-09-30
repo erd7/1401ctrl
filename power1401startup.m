@@ -14,16 +14,15 @@ if (stat < 0)
    return;
 end
 
-% reset power1401 to default; delete all loaded commands; error if fail
-% CHECK: Isn't it enough just to CLEAR 1401 without deleting loaded commands?
+%reset power1401 to default; error if fail;
+%From USE1401 doc: "This function performs a hardware reset of the 1401. This will stop any running commands and flush any input or output from the I/O buffers. Any DMA in progress is stopped. All loaded commands remain intact within the 1401. You can use this to get the 1401 out of a "hung" situation (for example when a dedicated 1401 command is waiting for a trigger which never comes), or for general-purpose initialisation."
 stat=MATCED32('cedResetX');
 if (stat < 0)
    disp(['power1401 not reset! ERROR CODE: ' int2str(stat)]);
    return;
 end
 
-% needed with latest version of the DLL (MEXW32- file); error if fail
-% CLARIFY!
+%Set memory working set; see USE1401 documentation.
 stat=MATCED32('cedWorkingSet',400,4000);
 if (stat > 0)
     disp('Error with call to cedWorkingSet- try commenting it out.');

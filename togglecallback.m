@@ -13,17 +13,18 @@ classdef togglecallback < handle
          obj.Parent = h.main;
          obj.ListeningTo = srcobj;
          obj.SignalObj = srcobj2;
+         obj.Prefs = getappdata(obj.Parent,'preferences');
          
          addlistener(obj.ListeningTo,'ToggleOn',@(src,evt)StimCtrl(obj,src,evt));
          %(Listening to ToggleOff is not necessary at all as stop condition (see below) is checked before every iteration correctly)
          
          %Following code is to be implemented at a more appropriate point:
+         %Initialize necessary cmds; INSTRUCTIONS ARE APPLIED BY SENDING STRINGS TO 1401; COMMANDS SEE LANGUAGE SUPPORT
          MATCED32('cedSendString','CLEAR');
          MATCED32('cedLdX',obj.Prefs.langpath,'MEMDAC','ADCMEM'); %In Optionen von user entry abhängig machen?
       end
       %Stimulation control and sampling routine:
       function StimCtrl(obj,src,evt)
-         %Initialize necessary cmds; INSTRUCTIONS ARE APPLIED BY SENDING STRINGS TO 1401; COMMANDS SEE LANGUAGE SUPPORT
          obj.Prefs = getappdata(obj.Parent,'preferences');
          
          chk = -1; %some initial value ~= 0,1,2,-128

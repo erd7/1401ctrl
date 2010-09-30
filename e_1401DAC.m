@@ -4,6 +4,8 @@ function r = e_1401DAC()
 %Construction routines & initialization
 %RBP (e), Bln2010
 
+%NEUES ANSTEUERUNGSPRINZIP: Erst Programm designen, dann als 1401interne RUNCMD sq übermitteln! --> programm endlich; endlosschleife anfragen!
+%anpassbar designen: RUNCMD vorerst unterlassen, programmschreiben via MATLAB --> Signalupdate möglich! (RUNCMD nur um die eingabe von 1401 testprogrammen zu erleichtern)
 %TODO: entry (amp) max. 5volts/ min -5volts; mit offset vereinbaren! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
 %FRQ: Nach unten gegen 0, nach oben gegen unendlich (Max value?)
 %stets: Redundanzen verringern --> kommunizierende Objekte abkapseln!
@@ -25,6 +27,7 @@ function r = e_1401DAC()
 %nota: nicht unkritisch variablen globalisieren, indem sie als object property deklariert werden!
 %--> noch unstimmigkeit im main closerq!
 %--> ERSTELLE GRUNDSÄTZLICH WIEDERVERWENDBARE IMPLEMENTIERUNGSKLASSEN; ENTSPRECHENDE OBERKLASSEN --> VERW. IN SUBKLASSEN AUCH OBERKLASSEN KONSTRUKTOREN UND VARIABLES ARGUMENT!
+%--> Toggleclasse mit internem callback konzipieren: interface klasse mit gemeinsamkeiten; sub für die jew. implementierung --> toggle als privates gui element! --> dennoch toggleevent, um andere objekte für vermutliche änderungen im betriebsmodus zu benachrichtigen!
 
 %--GLOBAL DATA STRUCTURES; via appdata accessible from every data encapsulation!
 %--> H: Stores uicontrol class object handles (to be handled as application data)
@@ -35,11 +38,11 @@ APPDAT = struct(...
    'subject','Unnamed');
 
 PREFS = struct(...
-   'langpath','C:\power1401Lang\',...
+   'langpath','C:\1401Lang\',...
    'chout',0);
 
 %--power1401 STARTUP
-power1401startup();
+%power1401startup(); //Now done in LOAD class!
 
 %--DEFINITION OF CALLBACK FUNCTIONS
    %Redefine std. closereq for 1401 shutdown:
@@ -94,8 +97,8 @@ power1401startup();
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
-   %H.main = figure('Visible','off','Position',[0,0,625,325],'MenuBar','none','CloseRequestFcn',@closereq);
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
+   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');

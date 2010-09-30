@@ -101,9 +101,10 @@ classdef mode < handle
             %Second param is dummy argument because of not having finished complete reusability yet:
             MAININPUT = input.maininput(Hloc,0,iniedit,inilbl,inievt);
             SIGNAL = gen_signal(Hloc,MAININPUT,400000); %10s at 40kHz for mode 2
+            LOAD = load1401(Hloc,SIGNAL);
             CALLTOGGLE = togglecallback_re(Hloc,TOGGLEBTTN,SIGNAL,MAININPUT);
             
-            APPDATloc.CURRENTOBJ = {TOGGLEBTTN,MAININPUT,SIGNAL,CALLTOGGLE};
+            APPDATloc.CURRENTOBJ = {TOGGLEBTTN,MAININPUT,SIGNAL,LOAD,CALLTOGGLE};
             APPDATloc.ModeCheck = 2;
             setappdata(Hloc.main,'appdata',APPDATloc);
          end
