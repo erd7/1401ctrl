@@ -28,14 +28,15 @@ classdef load1401
          %NOTE: Because sampling from 4byte data is not possible, DAC sequences have to be spit into chunks! //MAKE DEPEND ON SAMPLE RATE!
          fn = fieldnames(obj.SignalObj.Signal);
          sz = int2str(2*obj.SignalObj.DataLength); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! Array range has to be duplicated due to memory management with 2byte data! NOTE: ONLY SAMPLING FROM 2BYTE DATA IS POSSIBLE!
-         runs = length(obj.SignalObj.TrigSq/60);
+         chunksz = obj.SignalObj.DataLength/10;
+         runs = length(obj.SignalObj.TrigSq)/60;
          trigint = obj.SignalObj.TrigSq(2*i-1)-((i-1)*10000);
                                    
          %Since whole transfer of 400kb RN seems to be impossible, split into 10 chunks:
          for j=1:10
             dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i})(((j-1)*40000+1):(j*40000));
             %pause(1);
-            MATCED32('cedTo1401',obj.SignalObj.DataLength/10,(j-1)*2*40000,dacOut);
+            MATCED32('cedTo1401',chunksz,(j-1)*2*40000,dacOut);
             %pause(4);
          end
          
@@ -45,9 +46,12 @@ classdef load1401
                   
          %Load corresponding chunk of trig sq into 1401:
          MATCED32('cedSendString',['DIGTIM,SI,',num2str(2^22),',',num2str(2*16*runs),';']);
+         
          MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
          MATCED32('cedSendString','DIGTIM,A,1,0,2;');
-         trigint = obj.SignalObj.TrigSq(2*i)-obj.SignalObj.TrigSq(2*i-1)-2-((i-1)*10000);
+         
+         %trigint = obj.SignalObj.TrigSq(2*i)-obj.SignalObj.TrigSq(2*i-1)-2-((i-1)*10000);
+         trigint = obj.SignalObj.TrigSq(2*i)-2-((i-1)*10000);
          MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
          MATCED32('cedSendString','DIGTIM,A,1,0,2;');
          
@@ -58,10 +62,17 @@ classdef load1401
          %end
          MATCED32('cedSendString','DIGTIM,OD;');
          
+         %Initial value for control var:
+         MATCED32('cedSendString','VAR,S,Z,0;');
+         
          %Load sampling cycle & trig sq program to 1401:
          MATCED32('cedSendString','RUNCMD,L;');
+         %MATCED32('cedSendString','VAR,S,Z,800000;'); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
          MATCED32('cedSendString','DIGTIM,C,10,100;'); %//implement clock rate to depend on frqsubdiv; or vice versa (everything dependent on dig sample rate!
          MATCED32('cedSendString',['MEMDAC,I,2,0,',sz,',0,1,H,10,10;']);
+         MATCED32('cedSendString','MEMDAC,?:A;');
+         MATCED32('cedSendString','RUNCMD,BN,3,A,0;');
+         MATCED32('cedSendString','VAR,S,Z,1;');
          %for j=1:10
          %   MATCED32('cedSendString',['MEMDAC,I,2,',2*(j-1)*40000,',',sz,',0,1,H,10,10;']); %analog waveform output from RAM-Data (--> MEMDAC): kind: I (interrupt driven), byte: 2 (thus 16bit data), st: 0 (start at user RAM address 0); sz (size of transferred data, look above), chan: 0 (defines output channel: DAC-output 0), rpts: 1 (number of repeats), clock: H (high-speed clock: 4MHz (native sample rate; SEE FURTHER)), pre*cnt: 10*10 = 100: downsampling the selected clock by divisor of 100! --> sample rate of 40kHz, as implemented above! --> see manual: "clock set up"
          %   MATCED32('cedSendString','MEMDAC,?;');
