@@ -22,8 +22,9 @@ if (stat < 0)
    return;
 end
 
-%Set memory working set; see USE1401 documentation.
-stat=MATCED32('cedWorkingSet',400,4000);
+%Set memory working set; see USE1401 documentation. //TRY TO INCREASE!
+%stat=MATCED32('cedWorkingSet',400,4000);
+stat=MATCED32('cedWorkingSet',400,1000000);
 if (stat > 0)
     disp('Error with call to cedWorkingSet- try commenting it out.');
     return

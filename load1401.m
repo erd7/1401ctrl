@@ -1,5 +1,5 @@
 %Class loads the user specified program design to 1401 on GUI request
-classdef load1401
+classdef load1401 < handle
    properties
       Parent
       SignalObj
@@ -13,12 +13,12 @@ classdef load1401
          PREFSloc = getappdata(obj.Parent,'preferences');
          obj.SignalObj = src1;
          
-         Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,75,100,25],'Callback',@(src,evt)Load1401(obj,src,evt,incr));
+         %Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt,incr));
          
          setappdata(obj.Parent,'uihandles',Hloc);
          
-         power1401startup(); %//Make depend on former calls;
-         MATCED32('cedLdX','C:\1401Lang\','RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
+         MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
+         %MATCED32('cedSetTransfer',0,880000); %//Why too big?
       end
       function Load1401(obj,src,evt,i)
          MATCED32('cedSendString','CLEAR');
@@ -32,17 +32,13 @@ classdef load1401
          runs = length(obj.SignalObj.TrigSq)/60;
          trigint = obj.SignalObj.TrigSq(2*i-1)-((i-1)*10000);
                                    
-         %Since whole transfer of 400kb RN seems to be impossible, split into 10 chunks:
+         %Since whole transfer of 400kb RN seems to be impossible (only 2byte data!), split into 10 chunks:
+         %//Try to transfer whole sq with decreased sample rate!
          for j=1:10
             dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i})(((j-1)*40000+1):(j*40000));
-            %pause(1);
+            power1401shutdown;power1401startup; %//WHY IS THIS NECESSARY?
             MATCED32('cedTo1401',chunksz,(j-1)*2*40000,dacOut);
-            %pause(4);
          end
-         
-         %If whole transfer of 400kb RN chunk is possible:
-         %dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i});
-         %MATCED32('cedTo1401',obj.SignalObj.DataLength,0,dacOut);
                   
          %Load corresponding chunk of trig sq into 1401:
          MATCED32('cedSendString',['DIGTIM,SI,',num2str(2^22),',',num2str(2*16*runs),';']);
@@ -62,8 +58,9 @@ classdef load1401
          %end
          MATCED32('cedSendString','DIGTIM,OD;');
          
-         %Initial value for control var:
+         %Initial values for control vars:
          MATCED32('cedSendString','VAR,S,Z,0;');
+         MATCED32('cedSendString','VAR,S,A,1;');
          
          %Load sampling cycle & trig sq program to 1401:
          MATCED32('cedSendString','RUNCMD,L;');
@@ -71,12 +68,16 @@ classdef load1401
          MATCED32('cedSendString','DIGTIM,C,10,100;'); %//implement clock rate to depend on frqsubdiv; or vice versa (everything dependent on dig sample rate!
          MATCED32('cedSendString',['MEMDAC,I,2,0,',sz,',0,1,H,10,10;']);
          MATCED32('cedSendString','MEMDAC,?:A;');
+         %MATCED32('cedSendString','MEMDAC,?:?;');
          MATCED32('cedSendString','RUNCMD,BN,3,A,0;');
          MATCED32('cedSendString','VAR,S,Z,1;');
          %for j=1:10
          %   MATCED32('cedSendString',['MEMDAC,I,2,',2*(j-1)*40000,',',sz,',0,1,H,10,10;']); %analog waveform output from RAM-Data (--> MEMDAC): kind: I (interrupt driven), byte: 2 (thus 16bit data), st: 0 (start at user RAM address 0); sz (size of transferred data, look above), chan: 0 (defines output channel: DAC-output 0), rpts: 1 (number of repeats), clock: H (high-speed clock: 4MHz (native sample rate; SEE FURTHER)), pre*cnt: 10*10 = 100: downsampling the selected clock by divisor of 100! --> sample rate of 40kHz, as implemented above! --> see manual: "clock set up"
          %   MATCED32('cedSendString','MEMDAC,?;');
          %end
+         MATCED32('cedSendString','DIGTIM,S;'); %For assurance...
+         MATCED32('cedSendString','DIG,O,0,8;'); %For assurance...
+         MATCED32('cedSendString','RUNCMD,D;');
          MATCED32('cedSendString','END;');
       end
    end

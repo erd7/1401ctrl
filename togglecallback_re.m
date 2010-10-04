@@ -35,15 +35,21 @@ classdef togglecallback_re < handle
             obj.LoadObj.Load1401(0,0,i); %//First two params are dummy arguments for src & evt
             %Execute ith sampling & trigger cycle:
             MATCED32('cedSendString','RUNCMD,G;');
-            %Waiting for sq done (physical random and minimal interval between level plays):
+            
+            %Waiting for sq done (physical random and minimal interval between level plays): //As input mechanism is locked by 1401, string request does not work; implement some matlab random wait period instead.
+            %pause(8); %//Be random here! //Value empirical with respect to calculation time of hoste machine! extremely unstable!
             MATCED32('cedSendString','VAR,?,Z;');
-            chk = eval(MATCED32('cedGetString'));
-            drawnow;
-            while chk == 0
-               MATCED32('cedSendString','VAR,?,Z;'); %//Does loop cause command buffer overflow during RUNCMD?
-               chk = eval(MATCED32('cedGetString'));
-               drawnow;
+            chk = str2double(MATCED32('cedGetString'));
+            %drawnow;
+            if chk ~= 1
+               while chk ~= 1
+                  MATCED32('cedSendString','VAR,?,Z;'); %//Does loop cause command buffer overflow during RUNCMD?
+                  chk = str2double(MATCED32('cedGetString'));
+                  display('Waiting...');
+                  %drawnow;
+               end
             end
+            pause(1.1);
          end
             
          %Execute signal update & sampling loop; output is now controlled through a finite sweep number:

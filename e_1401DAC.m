@@ -42,7 +42,7 @@ PREFS = struct(...
    'chout',0);
 
 %--power1401 STARTUP
-%power1401startup(); //Now done in LOAD class!
+power1401startup; %//Make depend on former calls; implement at other point!
 
 %--DEFINITION OF CALLBACK FUNCTIONS
    %Redefine std. closereq for 1401 shutdown:

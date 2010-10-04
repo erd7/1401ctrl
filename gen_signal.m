@@ -56,7 +56,7 @@ classdef gen_signal < handle
    
          for i=1:steps
             strlvl = ['lvl',num2str(i)];
-            NSIG.(strlvl) = (awgn(z,(40-10*(i-1)),'measured')-1);
+            NSIG.(strlvl) = (awgn(z,(-5+(i-1)*2),'measured')-1);
             
             for j=1:subdiv
                strsublvl = ['lvl',num2str(i),'_',num2str(j)];
@@ -67,16 +67,6 @@ classdef gen_signal < handle
          end
          
          obj.Signal = orderfields(NSIG,randperm(steps*subdiv));
-         
-         %Store sequence information:
-         fn = fieldnames(obj.Signal);
-         fID = fopen('seq.txt','A');
-         fprintf(fID,'%s\r\n','--');
-         for i=1:length(fn)
-            str = fn{i};
-            fprintf(fID,'%s\r\n',str);
-         end
-         fclose(fID);
       end
       function GenTrigSq(obj,dur,isi) %//Implementiere ISI-Eingabe; //In SIGNALOBJ. implementieren! --> bisher kein update zur laufzeit möglich!
          %INTERVALLMAXIMUM DARF NICHT == HÄLFTE D. STIMSUBINTERVALS BETRAGEN!
@@ -104,6 +94,25 @@ classdef gen_signal < handle
          end
          obj.TrigSq = find(time);
          clear time;
+         
+         %Store sequence information: //Implement time stamp in major data structure!
+         APPDATloc = getappdata(obj.Parent,'appdata');
+         fn = fieldnames(obj.Signal);
+         fID = fopen('seq.txt','A');
+         fprintf(fID,'%s\r\n',['--',datestr(clock())]);
+         fprintf(fID,'%s\r\n',['Researcher: ',APPDATloc.researcher]);
+         fprintf(fID,'%s\r\n',['Subject: ',APPDATloc.subject]);
+         
+         for i=1:length(fn)
+            str = fn{i};
+            trigint = num2str(obj.TrigSq(2*i-1)-(i-1)*10000); %//Offset to corresponding level begin
+            trigtime = num2str(obj.TrigSq(2*i-1)-3000); %//Offset to sq begin
+            fprintf(fID,'%s',[num2str(2*i-1),'; ',str,'; ',trigtime]);fprintf(fID,'%s\r\n',['; ',trigint,'; P1']);
+            trigint = num2str(obj.TrigSq(2*i)-(i-1)*10000); %//Offset to corresponding level begin
+            trigtime = num2str(obj.TrigSq(2*i)-3000); %//Offset to sq begin
+            fprintf(fID,'%s',[num2str(2*i),'; ',str,'; ',trigtime]);fprintf(fID,'%s\r\n',['; ',trigint,'; P2']);
+         end
+         fclose(fID);
       end
       %Destructor:
       function delete(obj)

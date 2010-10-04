@@ -14,6 +14,7 @@ classdef mode < handle
          icon2 = ind2rgb(X,map);
          clear('X','map');
          
+         APPDATloc = getappdata(h.main,'appdata');
          Hloc = getappdata(h.main,'uihandles');
          Hloc.tool = uitoolbar(h.main);
          Hloc.tmode1 = uipushtool(Hloc.tool,'CData',icon1,'UserData','1','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,Hloc));
