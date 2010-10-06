@@ -5,6 +5,8 @@ function r = e_1401DAC()
 %RBP (e), Bln2010
 
 %NEUES ANSTEUERUNGSPRINZIP: Erst Programm designen, dann als 1401interne RUNCMD sq übermitteln! --> programm endlich; endlosschleife anfragen!
+%übergeordnete sammelklasse, die immer mitübergeben wird und die hauptdatenstrukturen updatet!
+%anstelle von obj.Parent gcf oder ähnliches! .. eigene übergeordnete statische methode?
 %anpassbar designen: RUNCMD vorerst unterlassen, programmschreiben via MATLAB --> Signalupdate möglich! (RUNCMD nur um die eingabe von 1401 testprogrammen zu erleichtern)
 %TODO: entry (amp) max. 5volts/ min -5volts; mit offset vereinbaren! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
 %FRQ: Nach unten gegen 0, nach oben gegen unendlich (Max value?)
@@ -12,9 +14,9 @@ function r = e_1401DAC()
 %PARADIGMA: output stets erst am Ende einer Verarbeitungskette benachrichtigen, sobald intern alles berechnet ist!
 %globale Datenstruktur für experimentelles Datenmaterial; Steuerdaten weiterhin objektorientiert handhaben
 %DAC output als eigene klasse von togglecallback trennen? bisher nicht sinnvoll!
-%grundsätzlich die gesamte headerklasse/struktur übergeben?
+%grundsätzlich die gesamte headerklasse/struktur übergeben? JA!
 %Updateroutinen für alle Klassen (nicht allein abh. vom Construktor)?
-%Argumente in der initialisierungsfunktion grundsätzlich als erweiterbare strukturen, die im ganzen übergeben werden? (z.B. für weitere bedienelemente)
+%Argumente in der initialisierungsfunktion grundsätzlich als erweiterbare strukturen, die im ganzen übergeben werden? (z.B. für weitere bedienelemente) --> s. a. variable Argumente!
 %Implementieren (im zu implementierenden Optionsmenü mit pre sample data): um hostabhängige fehler abzufangen: increase datapacksize/ decrease sampling rate
 %--> neue appdata struktur: preferences!
 %Erzeugerklasse für arrowbuttons! Super- und subklasse? s.a. Slidermöglichkeit!
@@ -97,8 +99,8 @@ power1401startup; %//Make depend on former calls; implement at other point!
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
-   %H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none','CloseRequestFcn',@closereq);
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
+   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');

@@ -28,29 +28,29 @@ classdef togglecallback_re < handle
 
          %swpz = obj.InputObj.UserInput.Entry1/2;
          %fn = fieldnames(obj.SignalObj.Signal);
-         chk = -1; %some initial value ~= 0,1,2,-128
+         %chk = -1; %some initial value ~= 0,1,2,-128
          %sz = int2str(2*obj.SignalObj.DataLength/10); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! Array range has to be duplicated due to memory management with 2byte data! NOTE: ONLY SAMPLING FROM 2BYTE DATA IS POSSIBLE!
          
-         for i=1:60
-            obj.LoadObj.Load1401(0,0,i); %//First two params are dummy arguments for src & evt
+         %for i=1:60
+            %obj.LoadObj.Load1401(0,0,i); %//First two params are dummy arguments for src & evt
             %Execute ith sampling & trigger cycle:
             MATCED32('cedSendString','RUNCMD,G;');
             
             %Waiting for sq done (physical random and minimal interval between level plays): //As input mechanism is locked by 1401, string request does not work; implement some matlab random wait period instead.
             %pause(8); %//Be random here! //Value empirical with respect to calculation time of hoste machine! extremely unstable!
-            MATCED32('cedSendString','VAR,?,Z;');
-            chk = str2double(MATCED32('cedGetString'));
+            %MATCED32('cedSendString','VAR,?,Z;');
+            %chk = str2double(MATCED32('cedGetString'));
             %drawnow;
-            if chk ~= 1
-               while chk ~= 1
-                  MATCED32('cedSendString','VAR,?,Z;'); %//Does loop cause command buffer overflow during RUNCMD?
-                  chk = str2double(MATCED32('cedGetString'));
-                  display('Waiting...');
-                  %drawnow;
-               end
-            end
-            pause(1.1);
-         end
+            %if chk ~= 1
+            %   while chk ~= 1
+            %      MATCED32('cedSendString','VAR,?,Z;'); %//Does loop cause command buffer overflow during RUNCMD?
+            %      chk = str2double(MATCED32('cedGetString'));
+            %      %display('Waiting...');
+            %      %drawnow;
+            %   end
+            %end
+            %pause(1.1);
+         %end
             
          %Execute signal update & sampling loop; output is now controlled through a finite sweep number:
          %for i=1:(swpz-1)

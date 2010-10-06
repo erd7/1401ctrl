@@ -52,15 +52,15 @@ classdef gen_signal < handle
          obj.Signal = m*(datarray*0+1);
       end
       function GenNoiseSq(obj,dur,steps,subdiv)
-         z = ([1:dur*40000]*0)+1; %Still assume, that sample rate is 40kHz //Split, if signal is too long! --> one minute sequence!
+         z = ([1:dur*obj.DataLength/10]*0)+1; %Still assume, that sample rate is 1kHz //Split, if signal is too long! --> one minute sequence!
    
          for i=1:steps
             strlvl = ['lvl',num2str(i)];
-            NSIG.(strlvl) = (awgn(z,(-5+(i-1)*2),'measured')-1);
+            NSIG.(strlvl) = (awgn(z,20*log10(7*1/i),'measured')-1)/6; %Linear increase of average RN amp; prove! Scaling factor 7 is empirical for best utilization of voltage range.
             
             for j=1:subdiv
                strsublvl = ['lvl',num2str(i),'_',num2str(j)];
-               NSIG.(strsublvl) = NSIG.(strlvl)(1+400000*(j-1):400000*(j));
+               NSIG.(strsublvl) = NSIG.(strlvl)(1+obj.DataLength*(j-1):obj.DataLength*(j));
             end
    
             NSIG = rmfield(NSIG,strlvl);

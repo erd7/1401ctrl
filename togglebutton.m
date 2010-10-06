@@ -12,14 +12,18 @@ classdef togglebutton < handle
    end
    methods
       %Constructor:
-      function obj = togglebutton(h,pos,lbl)
+      function obj = togglebutton(h,pos,lbl,stat)
          obj.Parent = h.main;
          Hloc = getappdata(h.main,'uihandles');
          obj.ButtonPosition = pos;
          obj.ButtonString = lbl;
-         Hloc.toggle = uicontrol('Style','togglebutton','String',obj.ButtonString,'Position',obj.ButtonPosition,'Callback',@(src,evt)ToggleCheck(obj,src,evt));
+         Hloc.toggle = uicontrol('Style','togglebutton','String',obj.ButtonString,'Position',obj.ButtonPosition,'Enable','off','Callback',@(src,evt)ToggleCheck(obj,src,evt));
          obj.ButtonHandle = Hloc.toggle;
          setappdata(h.main,'uihandles',Hloc);
+         
+         if stat == 1
+            set(Hloc.toggle,'Enable','on');
+         end
          
          %Following lines of this fct probably redundant
          if get(obj.ButtonHandle,'Value') == get(obj.ButtonHandle,'Max')

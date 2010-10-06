@@ -13,49 +13,57 @@ classdef load1401 < handle
          PREFSloc = getappdata(obj.Parent,'preferences');
          obj.SignalObj = src1;
          
-         %Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt,incr));
+         Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt));
          
          setappdata(obj.Parent,'uihandles',Hloc);
          
          MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
          %MATCED32('cedSetTransfer',0,880000); %//Why too big?
       end
-      function Load1401(obj,src,evt,i)
+      function Load1401(obj,src,evt)
+         Hloc = getappdata(obj.Parent,'uihandles');
          MATCED32('cedSendString','CLEAR');
          
          %Load RN chunk into 1401::
          %TODO: Define transfer RAM area- note 1MB restriction!
          %NOTE: Because sampling from 4byte data is not possible, DAC sequences have to be spit into chunks! //MAKE DEPEND ON SAMPLE RATE!
          fn = fieldnames(obj.SignalObj.Signal);
-         sz = int2str(2*obj.SignalObj.DataLength); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! Array range has to be duplicated due to memory management with 2byte data! NOTE: ONLY SAMPLING FROM 2BYTE DATA IS POSSIBLE!
-         chunksz = obj.SignalObj.DataLength/10;
-         runs = length(obj.SignalObj.TrigSq)/60;
-         trigint = obj.SignalObj.TrigSq(2*i-1)-((i-1)*10000);
+         sz = int2str(2*obj.SignalObj.DataLength*60); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! Array range has to be duplicated due to memory management with 2byte data! NOTE: ONLY SAMPLING FROM 2BYTE DATA IS POSSIBLE!
+         %chunksz = obj.SignalObj.DataLength/10;
+         runs = length(obj.SignalObj.TrigSq);
+         trigint = obj.SignalObj.TrigSq(1);
                                    
          %Since whole transfer of 400kb RN seems to be impossible (only 2byte data!), split into 10 chunks:
          %//Try to transfer whole sq with decreased sample rate!
-         for j=1:10
-            dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i})(((j-1)*40000+1):(j*40000));
+         %for j=1:10
+         %   dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i})(((j-1)*40000+1):(j*40000));
+         %   power1401shutdown;power1401startup; %//WHY IS THIS NECESSARY?
+         %   MATCED32('cedTo1401',chunksz,(j-1)*2*40000,dacOut);
+         %end
+         
+         for i=1:length(fn)
+            dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i});
             power1401shutdown;power1401startup; %//WHY IS THIS NECESSARY?
-            MATCED32('cedTo1401',chunksz,(j-1)*2*40000,dacOut);
+            MATCED32('cedTo1401',obj.SignalObj.DataLength,(i-1)*2*obj.SignalObj.DataLength,dacOut);
          end
                   
          %Load corresponding chunk of trig sq into 1401:
+         %//LOAD WHOLE TRIG SQ!
          MATCED32('cedSendString',['DIGTIM,SI,',num2str(2^22),',',num2str(2*16*runs),';']);
          
          MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
          MATCED32('cedSendString','DIGTIM,A,1,0,2;');
          
          %trigint = obj.SignalObj.TrigSq(2*i)-obj.SignalObj.TrigSq(2*i-1)-2-((i-1)*10000);
-         trigint = obj.SignalObj.TrigSq(2*i)-2-((i-1)*10000);
-         MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
-         MATCED32('cedSendString','DIGTIM,A,1,0,2;');
+         %trigint = obj.SignalObj.TrigSq(2*i)-2-((i-1)*10000);
+         %MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
+         %MATCED32('cedSendString','DIGTIM,A,1,0,2;');
          
-         %for i=1:(runs-1)
-         %   trigint = obj.SignalObj.TrigSq(i+1)-obj.SignalObj.TrigSq(i)-2;
-         %   MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
-         %   MATCED32('cedSendString','DIGTIM,A,1,0,2;');
-         %end
+         for i=1:(runs-1)
+            trigint = obj.SignalObj.TrigSq(i+1)-obj.SignalObj.TrigSq(i)-2;
+            MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint),';']);
+            MATCED32('cedSendString','DIGTIM,A,1,0,2;');
+         end
          MATCED32('cedSendString','DIGTIM,OD;');
          
          %Initial values for control vars:
@@ -66,7 +74,7 @@ classdef load1401 < handle
          MATCED32('cedSendString','RUNCMD,L;');
          %MATCED32('cedSendString','VAR,S,Z,800000;'); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
          MATCED32('cedSendString','DIGTIM,C,10,100;'); %//implement clock rate to depend on frqsubdiv; or vice versa (everything dependent on dig sample rate!
-         MATCED32('cedSendString',['MEMDAC,I,2,0,',sz,',0,1,H,10,10;']);
+         MATCED32('cedSendString',['MEMDAC,I,2,0,',sz,',0,1,H,400,10;']);
          MATCED32('cedSendString','MEMDAC,?:A;');
          %MATCED32('cedSendString','MEMDAC,?:?;');
          MATCED32('cedSendString','RUNCMD,BN,3,A,0;');
@@ -79,6 +87,8 @@ classdef load1401 < handle
          MATCED32('cedSendString','DIG,O,0,8;'); %For assurance...
          MATCED32('cedSendString','RUNCMD,D;');
          MATCED32('cedSendString','END;');
+         
+         set(Hloc.toggle,'Enable','on');
       end
    end
 end

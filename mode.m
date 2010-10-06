@@ -56,7 +56,7 @@ classdef mode < handle
             inievt = [1,1];
             
             %Invoke GUI class objects:
-            TOGGLEBTTN = togglebutton(Hloc,[225,15,50,25],'SAMPLE');
+            TOGGLEBTTN = togglebutton(Hloc,[225,15,50,25],'SAMPLE',1);
             RADIOGRP = radiobuttongrp(Hloc,[0.738,0.85,0.16,0.1],'SIN','CC');
    
             %Invoke instances of control classes (with private GUI elements due to user interface function):
@@ -96,12 +96,12 @@ classdef mode < handle
             inievt = [3,0]; %//second param redundant?
             
             %Invoke GUI class objects:
-            TOGGLEBTTN = togglebutton(Hloc,[200,25,100,25],'START SEQ.');
+            TOGGLEBTTN = togglebutton(Hloc,[200,25,100,25],'START SEQ.',0);
             
             %Invoke instances of control classes (with private GUI elements due to user interface function):
             %Second param is dummy argument because of not having finished complete reusability yet:
             MAININPUT = input.maininput(Hloc,0,iniedit,inilbl,inievt);
-            SIGNAL = gen_signal(Hloc,MAININPUT,400000); %10s at 40kHz for mode 2
+            SIGNAL = gen_signal(Hloc,MAININPUT,10000); %10s at 1kHz for mode 2
             LOAD = load1401(Hloc,SIGNAL);
             CALLTOGGLE = togglecallback_re(Hloc,TOGGLEBTTN,SIGNAL,MAININPUT,LOAD);
             
