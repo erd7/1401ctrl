@@ -1,10 +1,11 @@
 function r = e_1401DAC()
-%power1401 ANALOGUE OUTPUT
-%ERDCONTROL main program:
+%power1401 ANALOGUE AND DIG. TRIGGER OUTPUT
+%CONTROL CENTER main program:
 %Construction routines & initialization
 %RBP (e), Bln2010
 
 %NEUES ANSTEUERUNGSPRINZIP: Erst Programm designen, dann als 1401interne RUNCMD sq übermitteln! --> programm endlich; endlosschleife anfragen!
+%--> PROGRAMMKONZEPT AUFSTELLEN!
 %übergeordnete sammelklasse, die immer mitübergeben wird und die hauptdatenstrukturen updatet!
 %anstelle von obj.Parent gcf oder ähnliches! .. eigene übergeordnete statische methode?
 %anpassbar designen: RUNCMD vorerst unterlassen, programmschreiben via MATLAB --> Signalupdate möglich! (RUNCMD nur um die eingabe von 1401 testprogrammen zu erleichtern)
@@ -30,6 +31,7 @@ function r = e_1401DAC()
 %--> noch unstimmigkeit im main closerq!
 %--> ERSTELLE GRUNDSÄTZLICH WIEDERVERWENDBARE IMPLEMENTIERUNGSKLASSEN; ENTSPRECHENDE OBERKLASSEN --> VERW. IN SUBKLASSEN AUCH OBERKLASSEN KONSTRUKTOREN UND VARIABLES ARGUMENT!
 %--> Toggleclasse mit internem callback konzipieren: interface klasse mit gemeinsamkeiten; sub für die jew. implementierung --> toggle als privates gui element! --> dennoch toggleevent, um andere objekte für vermutliche änderungen im betriebsmodus zu benachrichtigen!
+%--> nicht togglecallbacks, sondern funktionsbezogen!
 
 %--GLOBAL DATA STRUCTURES; via appdata accessible from every data encapsulation!
 %--> H: Stores uicontrol class object handles (to be handled as application data)

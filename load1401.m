@@ -85,6 +85,7 @@ classdef load1401 < handle
          %end
          MATCED32('cedSendString','DIGTIM,S;'); %For assurance...
          MATCED32('cedSendString','DIG,O,0,8;'); %For assurance...
+         %//NULLSTROM HIER! (MEMDAC AN LEERER ADRESSE)
          MATCED32('cedSendString','RUNCMD,D;');
          MATCED32('cedSendString','END;');
          

@@ -33,7 +33,7 @@ classdef togglecallback < handle
          %Check if 1401 is ready and initiate data transfer:
          while chk ~= 0
             MATCED32('cedSendString','MEMDAC,?;');
-            chk = eval(MATCED32('cedGetString')); %does not work without eval! CLARIFY!
+            chk = str2double(MATCED32('cedGetString')); %does not work without eval! CLARIFY!
             %pause(0.1);  %this is an alternative to drawnow; CLARIFY!
             drawnow; %flushes the event queue
             

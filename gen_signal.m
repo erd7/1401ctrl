@@ -56,7 +56,7 @@ classdef gen_signal < handle
    
          for i=1:steps
             strlvl = ['lvl',num2str(i)];
-            NSIG.(strlvl) = (awgn(z,20*log10(7*1/i),'measured')-1)/6; %Linear increase of average RN amp; prove! Scaling factor 7 is empirical for best utilization of voltage range.
+            NSIG.(strlvl) = (awgn(z,20*log10(8*1/i),'measured')-1); %Linear increase of average RN amp; prove! Scaling factor 8 is empirical for best utilization of voltage range.
             
             for j=1:subdiv
                strsublvl = ['lvl',num2str(i),'_',num2str(j)];
