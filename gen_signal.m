@@ -95,24 +95,7 @@ classdef gen_signal < handle
          obj.TrigSq = find(time);
          clear time;
          
-         %Store sequence information: //Implement time stamp in major data structure!
-         APPDATloc = getappdata(obj.Parent,'appdata');
-         fn = fieldnames(obj.Signal);
-         fID = fopen('seq.txt','A');
-         fprintf(fID,'%s\r\n',['--',datestr(clock())]);
-         fprintf(fID,'%s\r\n',['Researcher: ',APPDATloc.researcher]);
-         fprintf(fID,'%s\r\n',['Subject: ',APPDATloc.subject]);
-         
-         for i=1:length(fn)
-            str = fn{i};
-            trigint = num2str(obj.TrigSq(2*i-1)-(i-1)*10000); %//Offset to corresponding level begin
-            trigtime = num2str(obj.TrigSq(2*i-1)-3000); %//Offset to sq begin
-            fprintf(fID,'%s',[num2str(2*i-1),'; ',str,'; ',trigtime]);fprintf(fID,'%s\r\n',['; ',trigint,'; P1']);
-            trigint = num2str(obj.TrigSq(2*i)-(i-1)*10000); %//Offset to corresponding level begin
-            trigtime = num2str(obj.TrigSq(2*i)-3000); %//Offset to sq begin
-            fprintf(fID,'%s',[num2str(2*i),'; ',str,'; ',trigtime]);fprintf(fID,'%s\r\n',['; ',trigint,'; P2']);
-         end
-         fclose(fID);
+         notify(obj,'NewCalcAlert');
       end
       %Destructor:
       function delete(obj)

@@ -1,5 +1,5 @@
 %Class loads the user specified program design to 1401 on GUI request
-classdef load1401 < handle
+classdef cload1401 < handle
    properties
       Parent
       SignalObj
@@ -7,7 +7,7 @@ classdef load1401 < handle
    end
    methods
       %Constructor:
-      function obj = load1401(h,src1)
+      function obj = cload1401(h,src1)
          obj.Parent = h.main;
          Hloc = getappdata(obj.Parent,'uihandles');
          PREFSloc = getappdata(obj.Parent,'preferences');
@@ -90,6 +90,12 @@ classdef load1401 < handle
          MATCED32('cedSendString','END;');
          
          set(Hloc.toggle,'Enable','on');
+      end
+      function delete(obj)
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.push1);
+         Hloc = rmfield(Hloc,'push1');
+         setappdata(obj.Parent,'uihandles',Hloc);
       end
    end
 end

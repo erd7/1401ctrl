@@ -6,6 +6,7 @@ function r = e_1401DAC()
 
 %NEUES ANSTEUERUNGSPRINZIP: Erst Programm designen, dann als 1401interne RUNCMD sq übermitteln! --> programm endlich; endlosschleife anfragen!
 %--> PROGRAMMKONZEPT AUFSTELLEN!
+%Gemeinsame interface klasse für 1401 ansteuerungsklassen (toggle gemeinsam etc.)
 %übergeordnete sammelklasse, die immer mitübergeben wird und die hauptdatenstrukturen updatet!
 %anstelle von obj.Parent gcf oder ähnliches! .. eigene übergeordnete statische methode?
 %anpassbar designen: RUNCMD vorerst unterlassen, programmschreiben via MATLAB --> Signalupdate möglich! (RUNCMD nur um die eingabe von 1401 testprogrammen zu erleichtern)
@@ -43,7 +44,8 @@ APPDAT = struct(...
 
 PREFS = struct(...
    'langpath','C:\1401Lang\',...
-   'chout',0);
+   'chout',0,...
+   'mepdelay',30);
 
 %--power1401 STARTUP
 power1401startup; %//Make depend on former calls; implement at other point!
@@ -61,33 +63,6 @@ power1401startup; %//Make depend on former calls; implement at other point!
       end
    end
 
-   %Common callback for the arrowbuttons: //Implement within inputclass! //Implement as slider?
-   %function BUTTON_arrows(src,evt)
-   %   H = getappdata(H.main,'uihandles');
-   %   switch get(src,'Tag')
-   %      case 'UP1'
-   %         in1 = str2double(get(H.edit1,'String')) + 0.5;
-   %         set(H.edit1,'String',num2str(in1));
-   %   
-   %         MAININPUT.UpdateInput();
-   %      case 'UP2'
-   %         in1 = str2double(get(H.edit2,'String')) + 1;
-   %         set(H.edit2,'String',num2str(in1));
-   %   
-   %         MAININPUT.UpdateInput();
-   %      case 'DWN1'
-   %         in1 = str2double(get(H.edit1,'String')) - 0.5;
-   %         set(H.edit1,'String',num2str(in1));
-   %   
-   %         MAININPUT.UpdateInput();
-   %      case 'DWN2'
-   %         in1 = str2double(get(H.edit2,'String')) - 1;
-   %         set(H.edit2,'String',num2str(in1));
-   %   
-   %         MAININPUT.UpdateInput();
-   %   end
-   %end
-  
    %Intermediate callbacks:
    %(necessary due to definition error using direct function handle callback; seems to be ignored using an intermediate callback)
    function prefcall(src,evt)
@@ -101,8 +76,8 @@ power1401startup; %//Make depend on former calls; implement at other point!
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   %H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
-   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none','CloseRequestFcn',@closereq);
+   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');
@@ -115,7 +90,7 @@ power1401startup; %//Make depend on former calls; implement at other point!
    setappdata(H.main,'preferences',PREFS);
    
    %Invoke main working mode switch class object:
-   PRGMODE = mode(H);
+   PRGMODE = cmode(H);
    
    %Update global data structures from application data:
    H = getappdata(H.main,'uihandles');
