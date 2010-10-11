@@ -3,7 +3,7 @@ function power1401shutdown()
 
 stat=MATCED32('cedCloseX');
 if (stat < 0)
-   disp(['power1401 not shut down! ERROR CODE: ' int2str(stat)]);
+   disp(['power1401 not shut down! ERROR CODE: ',int2str(stat)]);
    return;
 end
 

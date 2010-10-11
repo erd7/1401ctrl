@@ -16,6 +16,17 @@ classdef maininput < input.userinput
          obj.IniData = struct('pedit',{pedit},'plbl',{plbl},'pevt',{pevt});
          Hloc = getappdata(obj.Parent,'uihandles');
          
+         APPDATloc = getappdata(obj.Parent,'appdata');
+         if isempty(APPDATloc.CURRENTOBJ) == 0
+            fn = fieldnames(APPDATloc.CURRENTOBJ);
+         else
+            fn = {};
+         end
+         objstr = ['obj',num2str(length(fn)+1)];
+         APPDATloc.CURRENTOBJ.(objstr) = obj;
+         setappdata(obj.Parent,'appdata',APPDATloc);
+         clear fn APPDATloc;
+         
          for i=1:length(pedit{1}(:,1))
             stredit = ['edit',num2str(i)];
             strEntry = ['Entry',num2str(i)];

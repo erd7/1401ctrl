@@ -5,7 +5,7 @@ classdef prefgui < handle
       Prefs
    end
    methods
-      %Constructor: //Initialize user options GUI & load default preferences
+      %Constructor: //Initialize user options GUI & load default preferences; integrate in obj-management routine; edit destructor correspondingly
       function obj = prefgui(h)
          obj.Parent = h.main;
          Hloc = getappdata(obj.Parent,'uihandles');

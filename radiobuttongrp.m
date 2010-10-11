@@ -31,6 +31,17 @@ classdef radiobuttongrp < handle
          obj.RadioHandle2 = Hloc.radio2;
          setappdata(h.main,'uihandles',Hloc);
          
+         APPDATloc = getappdata(obj.Parent,'appdata');
+         if isempty(APPDATloc.CURRENTOBJ) == 0
+            fn = fieldnames(APPDATloc.CURRENTOBJ);
+         else
+            fn = {};
+         end
+         objstr = ['obj',num2str(length(fn)+1)];
+         APPDATloc.CURRENTOBJ.(objstr) = obj;
+         setappdata(obj.Parent,'appdata',APPDATloc);
+         clear fn APPDATloc;
+         
          %Following block probably reducible:         
          if get(obj.RadioHandle1,'Value') == get(obj.RadioHandle1,'Max') && get(obj.RadioHandle2,'Value') == get(obj.RadioHandle2,'Min')
             obj.RadioState1 = 1;
