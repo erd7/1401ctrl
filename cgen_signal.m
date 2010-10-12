@@ -77,11 +77,7 @@ classdef cgen_signal < handle
             NSIG = rmfield(NSIG,strlvl);
          end
          
-         %Currently 10 permutations possible; reconsider random number generator/ its initialization!
-         randlim = randireinit(10);
-         for i=1:randlim
             obj.Signal = orderfields(NSIG,randperm(steps*subdiv));
-         end
       end
       function GenTrigSq(obj,dur,isi) %//Implementiere ISI-Eingabe; //In SIGNALOBJ. implementieren! --> bisher kein update zur laufzeit möglich!
          %INTERVALLMAXIMUM DARF NICHT == HÄLFTE D. STIMSUBINTERVALS BETRAGEN!
@@ -92,16 +88,16 @@ classdef cgen_signal < handle
          for i=1:(dur)
             time(t1) = 1;
    
-            t2 = t1+3*frqsubdiv+randireinit(3*frqsubdiv);
+            t2 = t1+3*frqsubdiv+randi(3*frqsubdiv);
       
             while (i*10*frqsubdiv - t2) > 5*frqsubdiv
-               t2 = t1+3*frqsubdiv+randireinit(3*frqsubdiv);
+               t2 = t1+3*frqsubdiv+randi(3*frqsubdiv);
             end
    
-            t3 = t2+3*frqsubdiv+randireinit(3*frqsubdiv);
+            t3 = t2+3*frqsubdiv+randi(3*frqsubdiv);
    
             while t3 < (i*10*frqsubdiv)
-               t3 = t2+3*frqsubdiv+randireinit(3*frqsubdiv);
+               t3 = t2+3*frqsubdiv+randi(3*frqsubdiv);
             end
    
             time(t2) = 1;

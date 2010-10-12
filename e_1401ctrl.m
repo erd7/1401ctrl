@@ -35,6 +35,9 @@ function r = e_1401ctrl()
 %--> Toggleclasse mit internem callback konzipieren: interface klasse mit gemeinsamkeiten; sub für die jew. implementierung --> toggle als privates gui element! --> dennoch toggleevent, um andere objekte für vermutliche änderungen im betriebsmodus zu benachrichtigen!
 %--> nicht togglecallbacks, sondern funktionsbezogen!
 
+%--Generate random number stream for this session using combined multiple recusrive rng seeded with system clock:
+RandStream.setDefaultStream(RandStream('mrg32k3a','seed',sum(clock)));
+
 %--GLOBAL DATA STRUCTURES; via appdata accessible from every data encapsulation!
 %--> H: Stores uicontrol class object handles (to be handled as application data)
 %--> APPDAT: Application data; default values
