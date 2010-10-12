@@ -1,6 +1,6 @@
 %Controls the output on the GUI
 %wahrscheinlich besser: hier signal updaten und plotten, nicht noch zusätzliches update in der generatorklasse!
-classdef guiout < handle
+classdef cguiout < handle
    properties (SetAccess = public, GetAccess = public)
       ListeningTo
       Parent
@@ -9,10 +9,22 @@ classdef guiout < handle
    end
    methods
       %Constructor:
-      function obj = guiout(src1,h)
-         Hloc = getappdata(h.main,'uihandles');
+      function obj = cguiout(src1,h)
          obj.ListeningTo = src1;
          obj.Parent = h.main;
+         
+         Hloc = getappdata(h.main,'uihandles');
+         APPDATloc = getappdata(obj.Parent,'appdata');
+         
+         if length(fieldnames(APPDATloc.CURRENTOBJ)) > 0
+            fn = fieldnames(APPDATloc.CURRENTOBJ);
+         else
+            fn = {};
+         end
+         objstr = ['obj',num2str(length(fn)+1)];
+         APPDATloc.CURRENTOBJ.(objstr) = obj;
+         setappdata(obj.Parent,'appdata',APPDATloc);
+         clear fn APPDATloc;
          
          %Invoke axes objects:
          %Hloc.disp1 = axes('Units','Pixels','Position',[25,75,450,100],'Parent',h.main,'XLim',[0,40000],'YLim',[-5,5]);

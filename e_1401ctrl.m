@@ -1,9 +1,10 @@
-function r = e_1401DAC()
+function r = e_1401ctrl()
 %power1401 ANALOGUE AND DIG. TRIGGER OUTPUT
 %CONTROL CENTER main program:
 %Construction routines & initialization
 %RBP (e), Bln2010
 
+%NOTE: RND GENS ARE INITIALIZED WITH INCREMENT UP FROM MATLAB START PER DEFAULT!!1
 %NEUES ANSTEUERUNGSPRINZIP: Erst Programm designen, dann als 1401interne RUNCMD sq übermitteln! --> programm endlich; endlosschleife anfragen!
 %--> PROGRAMMKONZEPT AUFSTELLEN!
 %Gemeinsame interface klasse für 1401 ansteuerungsklassen (toggle gemeinsam etc.)
@@ -41,6 +42,8 @@ function r = e_1401DAC()
 APPDAT = struct(...
    'researcher','Default Researcher',...
    'subject','Unnamed');
+APPDAT.CURRENTOBJ.dummy = 0;
+APPDAT.CURRENTOBJ = rmfield(APPDAT.CURRENTOBJ,'dummy');
 
 PREFS = struct(...
    'langpath','C:\1401Lang\',...
@@ -76,15 +79,15 @@ power1401startup; %//Make depend on former calls; implement at other point!
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none');
-   %H.main = figure('Visible','off','Position',[0,0,675,325],'MenuBar','none','CloseRequestFcn',@closereq);
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
+   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');
    H.medit = uimenu(H.main,'Label','Edit');
    H.mprefs = uimenu(H.medit,'Label','Preferences','Callback',@prefcall);
    
-   %Set application data:
+   %Set application data (necessary after every data update invocation):
    setappdata(H.main,'uihandles',H);
    setappdata(H.main,'appdata',APPDAT);
    setappdata(H.main,'preferences',PREFS);
@@ -97,7 +100,6 @@ power1401startup; %//Make depend on former calls; implement at other point!
    
    %Rearrange components & properties: //local
    %set(H.main,'Units','normalized'); %Wichtig für Skalierungen; zunächst weiterhin Pixel (standard) wünschenswert
-   set(H.main,'Name','1401 CONTROLCENTER');
    movegui(H.main,'center');
    set(H.main,'Visible','on');
    

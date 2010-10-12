@@ -1,5 +1,5 @@
 %Signal data array generation class
-classdef gen_signal < handle
+classdef cgen_signal < handle
    properties
       Parent
       ListeningTo
@@ -12,12 +12,23 @@ classdef gen_signal < handle
    end
    methods
       %Constructor:
-      function obj = gen_signal(h,src1,dat)
+      function obj = cgen_signal(h,src1,dat)
          %nach Fertigstellung der Radiobuttongroup hier feststellen des selektierten Radiobuttons; zunächst Standardwert für SignalSelection
          %Radiogroup sendet event --> Update der Signalarrays!
          obj.Parent = h.main;
          obj.ListeningTo = src1;
          obj.DataLength = dat;
+         
+         APPDATloc = getappdata(obj.Parent,'appdata');
+         if length(fieldnames(APPDATloc.CURRENTOBJ)) > 0
+            fn = fieldnames(APPDATloc.CURRENTOBJ);
+         else
+            fn = {};
+         end
+         objstr = ['obj',num2str(length(fn)+1)];
+         APPDATloc.CURRENTOBJ.(objstr) = obj;
+         setappdata(obj.Parent,'appdata',APPDATloc);
+         clear fn APPDATloc;
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
          addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)GenSignal(obj,obj.ListeningTo.UserInput));
@@ -56,7 +67,7 @@ classdef gen_signal < handle
    
          for i=1:steps
             strlvl = ['lvl',num2str(i)];
-            NSIG.(strlvl) = (awgn(z,20*log10(8*1/i),'measured')-1); %Linear increase of average RN amp; prove! Scaling factor 8 is empirical for best utilization of voltage range.
+            NSIG.(strlvl) = (awgn(z,20*log10(20*1/i),'measured')-1); %Linear increase of average RN amp; prove! Scaling factor is empirical for best utilization of voltage range (initially chosen: 8; according to safety guidelines now 20).
             
             for j=1:subdiv
                strsublvl = ['lvl',num2str(i),'_',num2str(j)];
@@ -66,7 +77,11 @@ classdef gen_signal < handle
             NSIG = rmfield(NSIG,strlvl);
          end
          
-         obj.Signal = orderfields(NSIG,randperm(steps*subdiv));
+         %Currently 10 permutations possible; reconsider random number generator/ its initialization!
+         randlim = randireinit(10);
+         for i=1:randlim
+            obj.Signal = orderfields(NSIG,randperm(steps*subdiv));
+         end
       end
       function GenTrigSq(obj,dur,isi) %//Implementiere ISI-Eingabe; //In SIGNALOBJ. implementieren! --> bisher kein update zur laufzeit möglich!
          %INTERVALLMAXIMUM DARF NICHT == HÄLFTE D. STIMSUBINTERVALS BETRAGEN!
@@ -77,16 +92,16 @@ classdef gen_signal < handle
          for i=1:(dur)
             time(t1) = 1;
    
-            t2 = t1+3*frqsubdiv+randi(3*frqsubdiv);
+            t2 = t1+3*frqsubdiv+randireinit(3*frqsubdiv);
       
             while (i*10*frqsubdiv - t2) > 5*frqsubdiv
-               t2 = t1+3*frqsubdiv+randi(3*frqsubdiv);
+               t2 = t1+3*frqsubdiv+randireinit(3*frqsubdiv);
             end
    
-            t3 = t2+3*frqsubdiv+randi(3*frqsubdiv);
+            t3 = t2+3*frqsubdiv+randireinit(3*frqsubdiv);
    
             while t3 < (i*10*frqsubdiv)
-               t3 = t2+3*frqsubdiv+randi(3*frqsubdiv);
+               t3 = t2+3*frqsubdiv+randireinit(3*frqsubdiv);
             end
    
             time(t2) = 1;
