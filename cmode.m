@@ -78,7 +78,7 @@ classdef cmode < handle
                %Invoke instances of control classes (with private GUI elements due to user interface function):
                MAININPUT = input.maininput(Hloc,RADIOGRP,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(Hloc,MAININPUT,40000); %Make data length independet from user requirementss! 1s at 40kHz for mode 1.
-               CALLINOUT = cguiout(SIGNAL,Hloc);
+               CALLINOUT = cguiout(Hloc,SIGNAL);
                ACCESS1401 = caccess1401(Hloc,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse? --> obj-handle- sammelstruktur nötig!
 
                APPDATloc = getappdata(Hloc.main,'appdata');
@@ -130,6 +130,7 @@ classdef cmode < handle
                LOAD = cload1401(Hloc,SIGNAL);
                LOG = clog(Hloc,SIGNAL);
                EXEC1401 = crun1401(Hloc,initggl,SIGNAL,MAININPUT,LOAD);
+               OUTPUT = cguiout_re(Hloc,SIGNAL);
 
                APPDATloc = getappdata(Hloc.main,'appdata');
                APPDATloc.ModeCheck = 2;

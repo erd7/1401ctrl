@@ -9,7 +9,7 @@ classdef cguiout < handle
    end
    methods
       %Constructor:
-      function obj = cguiout(src1,h)
+      function obj = cguiout(h,src1)
          obj.ListeningTo = src1;
          obj.Parent = h.main;
          
@@ -40,9 +40,7 @@ classdef cguiout < handle
          %addlistener(obj.ListeningTo,'ToggleOff',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo));
          
          %Plot signal design:
-         set(h.main,'CurrentAxes',Hloc.disp2);
-         plothandle = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
-         set(gca,'YLim',[-5,5]);
+         obj.UpdateOutput(1,1,obj.ListeningTo,obj.Parent,obj.Monitor2);
       end
    end
    methods

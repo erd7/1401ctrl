@@ -71,6 +71,13 @@ classdef crun1401 < handle
             %obj.LoadObj.Load1401(0,0,i); %//First two params are dummy arguments for src & evt
             %Execute ith sampling & trigger cycle:
             MATCED32('cedSendString','RUNCMD,G;');
+            
+            
+            %IMPORTANT! IMPLEMENT WITH MONITOR ROUTINE IN GUIOUT CLASS!
+            %while obj.ToggleState == 1
+            %   addr = str2double(MATCED32('cedGetString'));
+            %   display(addr);
+            %end
       end
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');

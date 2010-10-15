@@ -37,11 +37,12 @@ classdef clog <handle
          APPDATloc = getappdata(obj.Parent,'appdata');
          fn = fieldnames(obj.SignalObj.Signal);
          
+         %Reconvert signalstruct to array:
          for i=1:length(fn)
             NSIG((i-1)*10000+1:i*10000) = obj.SignalObj.Signal.(fn{i});
          end
          
-         save signal.mat NSIG;
+         save(['SIGNAL_',APPDATloc.subject,'.mat'],'NSIG');
          clear NSIG;
          
          fID = fopen('seq.log','A');

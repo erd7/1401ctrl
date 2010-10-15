@@ -1,5 +1,5 @@
 %Interface class for collection and storage of user input data
-classdef userinput < handle
+classdef userinput < hgsetget
    properties
       UserInput
    end
