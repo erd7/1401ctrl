@@ -1,17 +1,18 @@
 %Controls the output on the GUI
 %wahrscheinlich besser: hier signal updaten und plotten, nicht noch zusätzliches update in der generatorklasse!
-classdef cguiout < handle
+classdef guiout_m2 < output.guiout
    properties (SetAccess = public, GetAccess = public)
       ListeningTo
       Parent
       Monitor2
-      PlotScaleX = linspace(0,1,40000);
+      PlotScaleX
    end
    methods
       %Constructor:
-      function obj = cguiout(h,src1)
+      function obj = guiout_m2(h,src1)
          obj.ListeningTo = src1;
          obj.Parent = h.main;
+         obj.PlotScaleX = linspace(0,100000,obj.ListeningTo.DataLength*60);
          
          Hloc = getappdata(h.main,'uihandles');
          
@@ -26,20 +27,31 @@ classdef cguiout < handle
          setappdata(h.main,'uihandles',Hloc);
          
          %prüfe: src hier direkt nutzen?
-         addlistener(obj.ListeningTo,'NewCalcAlert',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo,obj.Parent,obj.Monitor2));
+         addlistener(obj.ListeningTo,'NewCalcAlert',@(src,evt)UpdateOutput(obj,src,evt,h));
          %addlistener(obj.ListeningTo,'ToggleOn',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo));
          %addlistener(obj.ListeningTo,'ToggleOff',@(src,evt)UpdateOutput(obj,src,evt,obj.ListeningTo));
          
          %Plot signal design:
-         obj.UpdateOutput(1,1,obj.ListeningTo,obj.Parent,obj.Monitor2);
+         obj.UpdateOutput(1,1,Hloc);
+         clear Hloc;
       end
    end
    methods
-      function UpdateOutput(obj,src,evt,srcobj,fig,out2)
+      function UpdateOutput(obj,src,evt,h)
+         Hloc = getappdata(h.main,'uihandles');
+         
          %Plot signal design:
-         set(fig,'CurrentAxes',out2);         
-         plothandle = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
-         set(gca,'YLim',[-5,5]);
+         fn = fieldnames(obj.ListeningTo.Signal);
+         
+         %Reconvert signalstruct to array:
+         for i=1:length(fn)
+            NSIG((i-1)*10000+1:i*10000) = obj.ListeningTo.Signal.(fn{i});
+         end
+         
+         set(Hloc.main,'CurrentAxes',Hloc.disp2);       
+         hplot = plot(obj.PlotScaleX,NSIG,'Parent',gca);
+         set(gca,'YLim',[-2,2]);
+         clear Hloc;
       end
       %Destructor:
       function delete(obj)

@@ -58,7 +58,7 @@ classdef cmode < handle
                %Invoke instances of control classes (with private GUI elements due to user interface function):
                MAININPUT = input.maininput(Hloc,RADIOGRP,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(Hloc,MAININPUT,40000); %Make data length independet from user requirementss! 1s at 40kHz for mode 1.
-               CALLINOUT = cguiout(Hloc,SIGNAL);
+               GUIOUT = output.guiout_m1(Hloc,SIGNAL);
                ACCESS1401 = caccess1401(Hloc,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse? --> obj-handle- sammelstruktur nötig!
 
                APPDATloc = getappdata(Hloc.main,'appdata');
@@ -94,17 +94,38 @@ classdef cmode < handle
                LOAD = cload1401(Hloc,SIGNAL);
                LOG = clog(Hloc,SIGNAL);
                EXEC1401 = crun1401(Hloc,initggl,SIGNAL,MAININPUT,LOAD);
-               OUTPUT = cguiout_re(Hloc,SIGNAL);
+               GUIOUT = output.guiout_m2(Hloc,SIGNAL);
 
                APPDATloc = getappdata(Hloc.main,'appdata');
                APPDATloc.ModeCheck = 2;
                setappdata(Hloc.main,'appdata',APPDATloc);
                clear APPDATloc;
             case 3
-               %Initialisation options: ...
+               %Initialisation options:
+               iniedit =...
+                  {[75,25,50,25;...
+                  75,55,50,25]...
+                  [180;1]};
+               inilbl =...
+                  {[25,25,50,15;...
+                  25,55,50,15]
+                  {'DUR (s):';'LVL:'}};
+               inievt = [4,0]; %//second param redundant?
+               initggl =...
+                  {[200,25,100,25],...
+                  'START SEQ.',...
+                  0};
                
                %Delete all invoked objects (related to other program mode) and call new invocations:
                cdat.delobj(Hloc,'MODAL');
+               
+               %Invoke instances of control classes (with private GUI elements with respect to user interface function):
+               %Second param is dummy argument because of not having finished complete reusability yet:
+               MAININPUT = input.maininput(Hloc,0,iniedit,inilbl,inievt);
+               SIGNAL = cgen_signal(Hloc,MAININPUT,1280);
+               LOAD = cload1401_re(Hloc,SIGNAL);
+               EXEC1401 = crun1401(Hloc,initggl,SIGNAL,MAININPUT,LOAD);
+               GUIOUT = output.guiout_m3(Hloc,SIGNAL);
                
                APPDATloc = getappdata(Hloc.main,'appdata');
                APPDATloc.ModeCheck = 3;

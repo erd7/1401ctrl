@@ -39,6 +39,8 @@ classdef cgen_signal < handle
             case 3
                obj.GenNoiseSq(src1.Entry1,src1.Entry2,src1.Entry3);
                obj.GenTrigSq(src1.Entry1,0); %//ISI's still dummy arg; make depend!
+            case 4
+               obj.GenNoise(src1.Entry1,src1.Entry2);
          end
          
          notify(obj,'NewCalcAlert');
@@ -52,6 +54,13 @@ classdef cgen_signal < handle
          datarray = 0:(obj.DataLength-1);
          
          obj.Signal = m*(datarray*0+1);
+      end
+      function GenNoise(obj,dur,lvl) %//Integrate into GenNoiseSq (make varargin!)
+         z = ([1:dur*obj.DataLength]*0)+1;
+         
+         NSIG = awgn(z,20*log10(25*1/lvl),'measured')-1;
+         
+         obj.Signal = NSIG;
       end
       function GenNoiseSq(obj,dur,steps,subdiv)
          z = ([1:dur*obj.DataLength/10]*0)+1; %Still assume, that sample rate is 1kHz //Split, if signal is too long! --> one minute sequence!

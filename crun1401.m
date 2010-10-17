@@ -53,22 +53,13 @@ classdef crun1401 < handle
       function StimExec(obj,src,evt)
          obj.Prefs = getappdata(obj.Parent,'preferences');
 
-         %swpz = obj.InputObj.UserInput.Entry1/2;
-         %fn = fieldnames(obj.SignalObj.Signal);
-         %chk = -1; %some initial value ~= 0,1,2,-128
-         %sz = int2str(2*obj.SignalObj.DataLength/10); %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! Array range has to be duplicated due to memory management with 2byte data! NOTE: ONLY SAMPLING FROM 2BYTE DATA IS POSSIBLE!
-         
-         %for i=1:60
-            %obj.LoadObj.Load1401(0,0,i); %//First two params are dummy arguments for src & evt
-            %Execute ith sampling & trigger cycle:
-            MATCED32('cedSendString','RUNCMD,G;');
-            
-            
-            %IMPORTANT! IMPLEMENT WITH MONITOR ROUTINE IN GUIOUT CLASS!
-            %while obj.ToggleState == 1
-            %   addr = str2double(MATCED32('cedGetString'));
-            %   display(addr);
-            %end
+         MATCED32('cedSendString','RUNCMD,G;');
+                     
+         %IMPORTANT! IMPLEMENT WITH MONITOR ROUTINE IN GUIOUT CLASS!
+         %while obj.ToggleState == 1
+         %   addr = str2double(MATCED32('cedGetString'));
+         %   display(addr);
+         %end
       end
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');
