@@ -7,6 +7,7 @@ function r = e_1401ctrl()
 %NOTE: RND GENS ARE INITIALIZED WITH INCREMENT UP FROM MATLAB START PER DEFAULT!!1
 %NEUES ANSTEUERUNGSPRINZIP: Erst Programm designen, dann als 1401interne RUNCMD sq übermitteln! --> programm endlich; endlosschleife anfragen!
 %--> PROGRAMMKONZEPT AUFSTELLEN!
+%Make startup&shutdown fct static methods
 %nota: MATLAB objekterzeugung mittels eines eigens def. constructors bedeutet einen std-matlabconstructor zu überladen!
 %Gemeinsame interface klasse für 1401 ansteuerungsklassen (toggle gemeinsam etc.)
 %übergeordnete sammelklasse, die immer mitübergeben wird und die hauptdatenstrukturen updatet!
@@ -44,16 +45,16 @@ RandStream.setDefaultStream(RandStream('mrg32k3a','seed',sum(clock)));
 APPDAT = struct(...
    'researcher','Default Researcher',...
    'subject','Unnamed');
-APPDAT.CURRENTOBJ.dummy = 0;
-APPDAT.CURRENTOBJ = rmfield(APPDAT.CURRENTOBJ,'dummy');
+%//RECONSIDER STRUCT MANAGEMENT!
+APPDAT.CURRENTOBJ.MODAL.dummy = 0;
+APPDAT.CURRENTOBJ.GENERAL.dummy = 0;
+APPDAT.CURRENTOBJ.MODAL = rmfield(APPDAT.CURRENTOBJ.MODAL,'dummy');
+APPDAT.CURRENTOBJ.GENERAL = rmfield(APPDAT.CURRENTOBJ.GENERAL,'dummy');
 
 PREFS = struct(...
    'langpath','C:\1401Lang\',...
    'chout',0,...
    'mepdelay',30);
-
-%--power1401 STARTUP
-power1401startup; %//Make depend on former calls; implement at other point!
 
 %--DEFINITION OF CALLBACK FUNCTIONS
    %Redefine std. closereq for 1401 shutdown:
@@ -82,8 +83,8 @@ power1401startup; %//Make depend on former calls; implement at other point!
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
-   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
+   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');
@@ -95,8 +96,12 @@ power1401startup; %//Make depend on former calls; implement at other point!
    setappdata(H.main,'appdata',APPDAT);
    setappdata(H.main,'preferences',PREFS);
    
-   %Invoke main working mode switch class object:
+   %Invoke instances of general control classes:
+   DAT = cdat(H);
    PRGMODE = cmode(H);
+   
+   %--power1401 STARTUP
+   power1401startup; %//Make depend on former calls; implement at other point!
    
    %Update global data structures from application data:
    H = getappdata(H.main,'uihandles');

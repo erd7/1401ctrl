@@ -18,17 +18,8 @@ classdef cgen_signal < handle
          obj.Parent = h.main;
          obj.ListeningTo = src1;
          obj.DataLength = dat;
-         
-         APPDATloc = getappdata(obj.Parent,'appdata');
-         if length(fieldnames(APPDATloc.CURRENTOBJ)) > 0
-            fn = fieldnames(APPDATloc.CURRENTOBJ);
-         else
-            fn = {};
-         end
-         objstr = ['obj',num2str(length(fn)+1)];
-         APPDATloc.CURRENTOBJ.(objstr) = obj;
-         setappdata(obj.Parent,'appdata',APPDATloc);
-         clear fn APPDATloc;
+        
+         cdat.setobj(h,obj,'MODAL');
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
          addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)GenSignal(obj,obj.ListeningTo.UserInput));

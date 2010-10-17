@@ -13,16 +13,7 @@ classdef cload1401 < handle
          PREFSloc = getappdata(obj.Parent,'preferences');
          obj.SignalObj = src1;
          
-         APPDATloc = getappdata(obj.Parent,'appdata');
-         if length(fieldnames(APPDATloc.CURRENTOBJ)) > 0
-            fn = fieldnames(APPDATloc.CURRENTOBJ);
-         else
-            fn = {};
-         end
-         objstr = ['obj',num2str(length(fn)+1)];
-         APPDATloc.CURRENTOBJ.(objstr) = obj;
-         setappdata(obj.Parent,'appdata',APPDATloc);
-         clear fn APPDATloc;
+         cdat.setobj(h,obj,'MODAL');
          
          Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt));
          

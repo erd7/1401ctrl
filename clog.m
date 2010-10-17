@@ -10,16 +10,7 @@ classdef clog <handle
          obj.Parent = h.main;
          obj.SignalObj = src1;
          
-         APPDATloc = getappdata(obj.Parent,'appdata');
-         if length(fieldnames(APPDATloc.CURRENTOBJ)) > 0
-            fn = fieldnames(APPDATloc.CURRENTOBJ);
-         else
-            fn = {};
-         end
-         objstr = ['obj',num2str(length(fn)+1)];
-         APPDATloc.CURRENTOBJ.(objstr) = obj;
-         setappdata(obj.Parent,'appdata',APPDATloc);
-         clear fn APPDATloc;
+         cdat.setobj(h,obj,'MODAL');
          
          addlistener(obj.SignalObj,'NewCalcAlert',@(src,evt)UpdateLog(obj,src,evt));
          

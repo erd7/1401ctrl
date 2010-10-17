@@ -25,16 +25,7 @@ classdef crun1401 < handle
          Hloc = getappdata(obj.Parent,'uihandles');
          obj.Prefs = getappdata(obj.Parent,'preferences');
          
-         APPDATloc = getappdata(obj.Parent,'appdata');
-         if length(fieldnames(APPDATloc.CURRENTOBJ)) > 0
-            fn = fieldnames(APPDATloc.CURRENTOBJ);
-         else
-            fn = {};
-         end
-         objstr = ['obj',num2str(length(fn)+1)];
-         APPDATloc.CURRENTOBJ.(objstr) = obj;
-         setappdata(obj.Parent,'appdata',APPDATloc);
-         clear fn APPDATloc;
+         cdat.setobj(h,obj,'MODAL');
          
          Hloc.toggle = uicontrol('Style','togglebutton','String',inidat{2},'Position',inidat{1},'Enable','off','Callback',@(src,evt)ToggleCheck(obj,src,evt));
          setappdata(h.main,'uihandles',Hloc);
