@@ -5,11 +5,16 @@ classdef guiout_m3 < output.guiout
       ListeningTo
       Parent
       Monitor2
-      PlotScaleX = linspace(0,1,230400); %//MAKE DEPEND ON USER INPUT!
+      PlotScaleX
    end
    methods
       %Constructor:
       function obj = guiout_m3(h,src1)
+         APPDATloc = getappdata(h.main,'appdata');
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         obj.PlotScaleX = linspace(0,1,dur*1280);
+         
+         
          obj.ListeningTo = src1;
          obj.Parent = h.main;
          
@@ -37,13 +42,17 @@ classdef guiout_m3 < output.guiout
    end
    methods
       function UpdateOutput(obj,src,evt,h)
+         APPDATloc = getappdata(h.main,'appdata');
          Hloc = getappdata(h.main,'uihandles');
+         
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         obj.PlotScaleX = linspace(0,dur,dur*1280);
          
          %Plot signal design:
          set(Hloc.main,'CurrentAxes',Hloc.disp2);         
          hplot = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
          set(gca,'YLim',[-2,2]);
-         clear Hloc;
+         clear APPDATloc Hloc;
       end
       %Destructor:
       function delete(obj)

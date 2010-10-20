@@ -22,15 +22,18 @@ classdef cload1401_re < handle
          MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
       end
       function Load1401(obj,src,evt)
+         APPDATloc = getappdata(h.main,'appdata');
          Hloc = getappdata(obj.Parent,'uihandles');
-         sz = 2*obj.SignalObj.DataLength*180;
-         chunksz = obj.SignalObj.DataLength*18;
+         
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         sz = 2*obj.SignalObj.DataLength*dur;
+         chunksz = obj.SignalObj.DataLength*dur/10; %//MAKE DEPENDENT ON MAX PACKAGE SIZE!
          MATCED32('cedSendString','CLEAR;');
                                             
          %Since whole transfer of RN is impossible (only 2byte data!), split into 10 chunks:
          for i=1:10
-            dacOut = obj.DacScale * obj.SignalObj.Signal((i-1)*23040+1):(i*23040); %//MAKE DEPEND ON SAMPLE RATE!
-            MATCED32('cedTo1401',chunksz,(i-1)*2*23040,dacOut);
+            dacOut = obj.DacScale * obj.SignalObj.Signal((i-1)*dur/10*1280+1):(i*dur/10*1280); %//MAKE DEPEND ON SAMPLE RATE!
+            MATCED32('cedTo1401',chunksz,(i-1)*2*dur/10*1280,dacOut);
          end
                   
          %Initial values for control vars:
@@ -40,7 +43,7 @@ classdef cload1401_re < handle
          %Load sampling cycle & trig sq program to 1401:
          MATCED32('cedSendString','RUNCMD,L;');
          MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
-         MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,125,25;']);
+         MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,125,25;']); %Sample rate is 1280
          MATCED32('cedSendString','MEMDAC,?:A;');
          MATCED32('cedSendString','MEMDAC,P:?;');
          MATCED32('cedSendString','RUNCMD,BN,3,A,0;');
