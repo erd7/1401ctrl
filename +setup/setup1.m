@@ -1,13 +1,12 @@
 %Class loads the user specified program design to 1401 on GUI request
-classdef cload1401 < handle
+classdef setup1 < setup.load1401
    properties
       Parent
       SignalObj
-      DacScale = 2^16/10; %implement as device property in separate data holding class/struct; Voltage scaling by DAC units: voltage resolution is given by 16bit for a 10V range; thus 1V equals to 6553.6 DAC units/ minimum step width (resolution) is 1,53mV (1DAC unit)
    end
    methods
       %Constructor:
-      function obj = cload1401(h,src1)
+      function obj = setup1(h,src1)
          obj.Parent = h.main;
          Hloc = getappdata(obj.Parent,'uihandles');
          PREFSloc = getappdata(obj.Parent,'preferences');

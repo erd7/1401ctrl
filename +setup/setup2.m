@@ -1,13 +1,12 @@
 %Class loads the user specified program design to 1401 on GUI request
-classdef cload1401_re < handle
+classdef setup2 < setup.load1401
    properties
       Parent
       SignalObj
-      DacScale = 2^16/10; %implement as device property in separate data holding class/struct; Voltage scaling by DAC units: voltage resolution is given by 16bit for a 10V range; thus 1V equals to 6553.6 DAC units/ minimum step width (resolution) is 1,53mV (1DAC unit)
    end
    methods
       %Constructor:
-      function obj = cload1401_re(h,src1)
+      function obj = setup2(h,src1)
          obj.Parent = h.main;
          Hloc = getappdata(obj.Parent,'uihandles');
          PREFSloc = getappdata(obj.Parent,'preferences');
@@ -22,7 +21,7 @@ classdef cload1401_re < handle
          MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
       end
       function Load1401(obj,src,evt)
-         APPDATloc = getappdata(h.main,'appdata');
+         APPDATloc = getappdata(obj.Parent,'appdata');
          Hloc = getappdata(obj.Parent,'uihandles');
          
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
@@ -32,8 +31,8 @@ classdef cload1401_re < handle
                                             
          %Since whole transfer of RN is impossible (only 2byte data!), split into 10 chunks:
          for i=1:10
-            dacOut = obj.DacScale * obj.SignalObj.Signal((i-1)*dur/10*1280+1):(i*dur/10*1280); %//MAKE DEPEND ON SAMPLE RATE!
-            MATCED32('cedTo1401',chunksz,(i-1)*2*dur/10*1280,dacOut);
+            dacOut = obj.DacScale * obj.SignalObj.Signal((i-1)*chunksz+1:i*chunksz); %//MAKE DEPEND ON SAMPLE RATE!
+            MATCED32('cedTo1401',chunksz,(i-1)*2*chunksz,dacOut);
          end
                   
          %Initial values for control vars:
@@ -42,14 +41,15 @@ classdef cload1401_re < handle
          
          %Load sampling cycle & trig sq program to 1401:
          MATCED32('cedSendString','RUNCMD,L;');
-         MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
+         %MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
          MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,125,25;']); %Sample rate is 1280
          MATCED32('cedSendString','MEMDAC,?:A;');
-         MATCED32('cedSendString','MEMDAC,P:?;');
-         MATCED32('cedSendString','RUNCMD,BN,3,A,0;');
-         MATCED32('cedSendString','VAR,S,Z,1;');
+         %MATCED32('cedSendString','MEMDAC,P:?;'); %//NOTE: Works, but floads output buffer- checkout continously, if implemented!
+         MATCED32('cedSendString','RUNCMD,BN,2,A,0;');
+         %MATCED32('cedSendString','VAR,S,Z,1;');
          %//NULLSTROM HIER! (MEMDAC AN LEERER ADRESSE)
-         MATCED32('cedSendString','RUNCMD,D;');
+         %MATCED32('cedSendString',['MEMDAC,I,2,',num2str(2^16),',2,0,1,H,125,25;']); %Sample rate is 1280
+         %MATCED32('cedSendString','RUNCMD,D;');
          MATCED32('cedSendString','END;');
          
          set(Hloc.toggle,'Enable','on');

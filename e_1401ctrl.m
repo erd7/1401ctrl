@@ -83,8 +83,8 @@ PREFS = struct(...
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
-   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
+   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');
@@ -96,12 +96,12 @@ PREFS = struct(...
    setappdata(H.main,'appdata',APPDAT);
    setappdata(H.main,'preferences',PREFS);
    
+%--power1401 STARTUP
+   power1401startup; %//Make depend on former calls; implement at other point!
+   
    %Invoke instances of general control classes:
    DAT = cdat(H);
    PRGMODE = cmode(H);
-   
-   %--power1401 STARTUP
-   power1401startup; %//Make depend on former calls; implement at other point!
    
    %Update global data structures from application data:
    H = getappdata(H.main,'uihandles');

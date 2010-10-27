@@ -33,7 +33,6 @@ classdef caccess1401 < handle
          %(Listening to ToggleOff is not necessary at all as stop condition (see below) is checked before every iteration correctly)
          
          %Following code is to be implemented at a more appropriate point:
-         MATCED32('cedSendString','CLEAR;');
          MATCED32('cedLdX',obj.Prefs.langpath,'MEMDAC'); %In Optionen von user entry abhängig machen?
       end
       %Internal callback & event notifier:
@@ -50,6 +49,8 @@ classdef caccess1401 < handle
       %Stimulation control and sampling routine:
       function StimCtrl(obj,src,evt)
          obj.Prefs = getappdata(obj.Parent,'preferences');
+         
+         MATCED32('cedSendString','CLEAR;');
          
          chk = -1; %some initial value ~= 0,1,2,-128
          sz = int2str(2*obj.SignalObj.DataLength); %sz: number of BYTES to be sampled from; note: 1401 splits two byte data into 2 subchunks, claiming twice as much memory space!

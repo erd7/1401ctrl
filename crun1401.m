@@ -52,14 +52,18 @@ classdef crun1401 < handle
       %Stimulation control and sampling routine:
       function StimExec(obj,src,evt)
          obj.Prefs = getappdata(obj.Parent,'preferences');
+         Hloc = getappdata(obj.Parent,'uihandles');
 
          MATCED32('cedSendString','RUNCMD,G;');
+         
+         %set(Hloc.toggle,'Enable','off'); %//ONLY AFTER OR IF TGGLE IS RELEASED!
                      
          %IMPORTANT! IMPLEMENT WITH MONITOR ROUTINE IN GUIOUT CLASS!
          %while obj.ToggleState == 1
          %   addr = str2double(MATCED32('cedGetString'));
          %   display(addr);
          %end
+         clear Hloc;
       end
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');

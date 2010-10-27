@@ -1,0 +1,108 @@
+%Class loads the user specified program design to 1401 on GUI request
+classdef setup3 < setup.load1401
+   properties
+      Parent
+      SignalObj
+   end
+   methods
+      %Constructor:
+      function obj = setup3(h,src1)
+         obj.Parent = h.main;
+         Hloc = getappdata(obj.Parent,'uihandles');
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         obj.SignalObj = src1;
+         
+         cdat.setobj(h,obj,'MODAL');
+         
+         Hloc.push1 = uicontrol('Style','Pushbutton','String','RUN SQ.','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt));
+         Hloc.lbls1 = uicontrol('Style','text','String','WAITING FOR SQ. START...','Position',[50,85,400,15],'HorizontalAlignment','left','BackgroundColor',[0.8,0.8,0.8]);
+         Hloc.lbls2 = uicontrol('Style','text','String','...','Position',[50,105,100,15],'BackgroundColor',[1,0.5,0.5]);
+         
+         setappdata(obj.Parent,'uihandles',Hloc);
+         
+         MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
+      end
+      function Load1401(obj,src,evt)
+         APPDATloc = getappdata(obj.Parent,'appdata');
+         Hloc = getappdata(obj.Parent,'uihandles');
+         
+         %//IMPLEMENT EVERYTHING IN MAININPUT CLASS?
+         set(Hloc.edit1,'Enable','off');
+         set(Hloc.edit2,'Enable','off');
+         
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         sz = 2*obj.SignalObj.DataLength*dur;
+         chunksz = obj.SignalObj.DataLength*dur/10; %//MAKE DEPENDENT ON MAX PACKAGE SIZE!
+         cycles = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
+         zeroDC = zeros(1,128);
+         chk = -1;
+         
+         sq = randperm(cycles);
+         set(Hloc.lbls1,'String',['LVL order will be: ',num2str(sq)]);
+         
+         MATCED32('cedSendString','CLEAR;');
+         
+         for i=1:cycles
+            set(Hloc.lbls2,'String','...');
+            obj.SignalObj.GenNoise(dur,sq(i));
+            
+            nsig = obj.SignalObj.Signal;
+         
+            %Since whole transfer of RN is impossible (only 2byte data!), split into 10 chunks:
+            for j=1:10
+               dacOut = obj.DacScale * nsig((j-1)*chunksz+1:j*chunksz); %//MAKE DEPEND ON SAMPLE RATE!
+               MATCED32('cedTo1401',chunksz,(j-1)*2*chunksz,dacOut);
+            end
+            
+            %// Dummy zero current:
+            MATCED32('cedTo1401',length(zeroDC),sz,zeroDC); %//negative byte addresses?
+                  
+            %Initial values for control vars:
+            MATCED32('cedSendString','VAR,S,Z,0;');
+            MATCED32('cedSendString','VAR,S,A,1;');
+         
+            %Load sampling cycle & trig sq program to 1401:
+            MATCED32('cedSendString','RUNCMD,L;');
+            %MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
+            MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,125,25;']); %Sample rate is 1280
+            MATCED32('cedSendString','MEMDAC,?:A;');
+            MATCED32('cedSendString','MEMDAC,?:?;');
+            %MATCED32('cedSendString','MEMDAC,P:?;');
+            MATCED32('cedSendString','RUNCMD,BN,2,A,0;');
+            MATCED32('cedSendString','VAR,S,Z,1;');
+            MATCED32('cedSendString','VAR,S,A,1;');
+            %//NULLSTROM HIER!
+            %MATCED32('cedSendString',['MEMDAC,I,2,',int2str(sz),',',2*int2str(length(zeroDC)),',0,1,H,125,25;']); %Sample rate is 1280
+            %MATCED32('cedSendString','MEMDAC,?:A;');
+            %MATCED32('cedSendString','MEMDAC,?:?;');
+            %MATCED32('cedSendString','RUNCMD,BN,8,A,0;');
+            MATCED32('cedSendString','END;');
+         
+            MATCED32('cedSendString','RUNCMD,G;');
+            
+            %Wait for 1401 done:
+            while chk ~= 0
+               chk = str2double(MATCED32('cedGetString'));
+               %display(chk);
+            end
+            
+            set(Hloc.lbls2,'String','Sq. done, counting from 30...');
+            pause(2);
+            set(Hloc.lbls2,'String','GO!');
+            pause(5);
+         end
+                  
+         set(Hloc.lbls1,'String','All done!');
+         set(Hloc.edit1,'Enable','on');
+         set(Hloc.edit2,'Enable','on');
+      end
+      function delete(obj)
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.push1);
+         delete(Hloc.lbls1);
+         delete(Hloc.lbls2);
+         Hloc = rmfield(Hloc,'push1');
+         setappdata(obj.Parent,'uihandles',Hloc);
+      end
+   end
+end

@@ -17,6 +17,7 @@ classdef cmode < handle
          Hloc.tmode1 = uipushtool(Hloc.tool,'CData',icon,'UserData','1','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,Hloc));
          Hloc.tmode2 = uipushtool(Hloc.tool,'CData',icon,'UserData','2','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,Hloc));
          Hloc.tmode3 = uipushtool(Hloc.tool,'CData',icon,'UserData','3','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,Hloc));
+         Hloc.tmode4 = uipushtool(Hloc.tool,'CData',icon,'UserData','4','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,Hloc));
          setappdata(h.main,'uihandles',Hloc);
          
          APPDATloc = getappdata(h.main,'appdata');
@@ -91,7 +92,7 @@ classdef cmode < handle
                %Second param is dummy argument because of not having finished complete reusability yet:
                MAININPUT = input.maininput(Hloc,0,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(Hloc,MAININPUT,10000); %10s at 1kHz for mode 2
-               LOAD = cload1401(Hloc,SIGNAL);
+               LOAD = setup.setup1(Hloc,SIGNAL);
                LOG = clog(Hloc,SIGNAL);
                EXEC1401 = crun1401(Hloc,initggl,SIGNAL,MAININPUT,LOAD);
                GUIOUT = output.guiout_m2(Hloc,SIGNAL);
@@ -123,12 +124,38 @@ classdef cmode < handle
                %Second param is dummy argument because of not having finished complete reusability yet:
                MAININPUT = input.maininput(Hloc,0,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(Hloc,MAININPUT,1280);
-               LOAD = cload1401_re(Hloc,SIGNAL);
+               LOAD = setup.setup2(Hloc,SIGNAL);
                EXEC1401 = crun1401(Hloc,initggl,SIGNAL,MAININPUT,LOAD);
                GUIOUT = output.guiout_m3(Hloc,SIGNAL);
                
                APPDATloc = getappdata(Hloc.main,'appdata');
                APPDATloc.ModeCheck = 3;
+               setappdata(Hloc.main,'appdata',APPDATloc);
+               clear fn APPDATloc;
+            case 4
+               %Initialisation options:
+               iniedit =...
+                  {[75,25,50,25;...
+                  75,55,50,25]...
+                  [180;10]};
+               inilbl =...
+                  {[25,25,50,15;...
+                  25,55,50,15]...
+                  {'DUR (s):';'Cycles:'}};
+               inievt = [4,0]; %//second param redundant?
+               
+               %Delete all invoked objects (related to other program mode) and call new invocations:
+               cdat.delobj(Hloc,'MODAL');
+               
+               %Invoke instances of control classes (with private GUI elements with respect to user interface function):
+               %Second param is dummy argument because of not having finished complete reusability yet:
+               MAININPUT = input.maininput(Hloc,0,iniedit,inilbl,inievt);
+               SIGNAL = cgen_signal(Hloc,MAININPUT,1280);
+               EXEC1401 = setup.setup3(Hloc,SIGNAL);
+               %GUIOUT = output.guiout_m3(Hloc,SIGNAL);
+               
+               APPDATloc = getappdata(Hloc.main,'appdata');
+               APPDATloc.ModeCheck = 4;
                setappdata(Hloc.main,'appdata',APPDATloc);
                clear fn APPDATloc;
          end
