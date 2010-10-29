@@ -6,8 +6,8 @@ classdef sessgui < handle
    end
    methods
       %Constructor: //Initialize session settings GUI & load default values
-      function obj = sessgui(h)
-         obj.Parent = h.main;
+      function obj = sessgui(hmain)
+         obj.Parent = hmain;
          Hloc = getappdata(obj.Parent,'uihandles');
          
          %Invoke GUI:
@@ -15,7 +15,7 @@ classdef sessgui < handle
          setappdata(obj.Parent,'uihandles',Hloc);
          
          %Build local GUI elements: //here new concrete class prefinput!
-         SESSINPUT = input.sessinput(Hloc); %auch manuell zerstören?
+         SESSINPUT = input.sessinput(hmain); %auch manuell zerstören?
          
          movegui(Hloc.sess,'center');
          set(Hloc.sess,'Visible','on');

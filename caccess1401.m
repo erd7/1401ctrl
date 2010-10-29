@@ -14,16 +14,16 @@ classdef caccess1401 < handle
    end
    methods
       %Constructor:
-      function obj = caccess1401(h,inidat,src1)
-         obj.Parent = h.main;
+      function obj = caccess1401(hmain,inidat,src1)
+         obj.Parent = hmain;
          obj.SignalObj = src1;
          Hloc = getappdata(obj.Parent,'uihandles');
          obj.Prefs = getappdata(obj.Parent,'preferences');
          
-         cdat.setobj(h,obj,'MODAL');
+         cdat.setobj(hmain,obj,'MODAL');
          
          Hloc.toggle = uicontrol('Style','togglebutton','String',inidat{2},'Position',inidat{1},'Enable','off','Callback',@(src,evt)ToggleCheck(obj,src,evt));
-         setappdata(h.main,'uihandles',Hloc);
+         setappdata(hmain,'uihandles',Hloc);
          
          if inidat{3} == 1
             set(Hloc.toggle,'Enable','on');

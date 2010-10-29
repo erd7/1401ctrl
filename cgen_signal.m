@@ -12,14 +12,14 @@ classdef cgen_signal < handle
    end
    methods
       %Constructor:
-      function obj = cgen_signal(h,src1,dat)
+      function obj = cgen_signal(hmain,src1,dat)
          %nach Fertigstellung der Radiobuttongroup hier feststellen des selektierten Radiobuttons; zunächst Standardwert für SignalSelection
          %Radiogroup sendet event --> Update der Signalarrays!
-         obj.Parent = h.main;
+         obj.Parent = hmain;
          obj.ListeningTo = src1;
          obj.DataLength = dat;
         
-         cdat.setobj(h,obj,'MODAL');
+         cdat.setobj(hmain,obj,'MODAL');
          
          %Noch sauber zwischen Radiobuttons unterscheiden!
          addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)GenSignal(obj,obj.ListeningTo.UserInput));

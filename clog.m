@@ -6,11 +6,11 @@ classdef clog <handle
    end
    methods
       %Constructor:
-      function obj = clog(h,src1)
-         obj.Parent = h.main;
+      function obj = clog(hmain,src1)
+         obj.Parent = hmain;
          obj.SignalObj = src1;
          
-         cdat.setobj(h,obj,'MODAL');
+         cdat.setobj(hmain,obj,'MODAL');
          
          addlistener(obj.SignalObj,'NewCalcAlert',@(src,evt)UpdateLog(obj,src,evt));
          

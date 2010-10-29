@@ -8,8 +8,8 @@ classdef cdat < handle
    end
    methods
       %Overload standard class constructor:
-      function obj = cdat(h)
-         cdat.setobj(h,obj,'GENERAL');
+      function obj = cdat(hmain)         
+         cdat.setobj(hmain,obj,'GENERAL');
       end
       function r = get.TimeStamp(obj)
          tmp = clock;
@@ -20,8 +20,8 @@ classdef cdat < handle
       end
    end
    methods (Static)
-      function r = uistr(h,prop)
-         Hloc = getappdata(h.main,'uihandles');
+      function r = uistr(hmain,prop)
+         Hloc = getappdata(hmain,'uihandles');
          
          m = 0;
          fn = fieldnames(Hloc);
@@ -43,8 +43,8 @@ classdef cdat < handle
       end
       function getobj()
       end
-      function setobj(h,src,cat)
-         APPDATloc = getappdata(h.main,'appdata');
+      function setobj(hmain,src,cat)
+         APPDATloc = getappdata(hmain,'appdata');
          cname = cdat.classname(src);
          instnum = 1;
          
@@ -63,11 +63,11 @@ classdef cdat < handle
          
          objstr = [cname,'_',num2str(instnum)];
          APPDATloc.CURRENTOBJ.(cat).(objstr) = src;
-         setappdata(h.main,'appdata',APPDATloc);
+         setappdata(hmain,'appdata',APPDATloc);
          clear fn APPDATloc;
       end
-      function delobj(h,cat)
-         APPDATloc = getappdata(h.main,'appdata');
+      function delobj(hmain,cat)
+         APPDATloc = getappdata(hmain,'appdata');
          if isempty(APPDATloc.CURRENTOBJ.(cat)) == 0
             fn = fieldnames(APPDATloc.CURRENTOBJ.(cat));
             for i=1:length(fn)
@@ -77,7 +77,7 @@ classdef cdat < handle
                end
             end
          end
-            setappdata(h.main,'appdata',APPDATloc);
+            setappdata(hmain,'appdata',APPDATloc);
             clear fn APPDATloc;
       end
    end

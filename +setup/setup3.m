@@ -6,13 +6,13 @@ classdef setup3 < setup.load1401
    end
    methods
       %Constructor:
-      function obj = setup3(h,src1)
-         obj.Parent = h.main;
+      function obj = setup3(hmain,src1)
+         obj.Parent = hmain;
          Hloc = getappdata(obj.Parent,'uihandles');
          PREFSloc = getappdata(obj.Parent,'preferences');
          obj.SignalObj = src1;
          
-         cdat.setobj(h,obj,'MODAL');
+         cdat.setobj(hmain,obj,'MODAL');
          
          Hloc.push1 = uicontrol('Style','Pushbutton','String','RUN SQ.','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt));
          Hloc.lbls1 = uicontrol('Style','text','String','WAITING FOR SQ. START...','Position',[25,85,400,15],'HorizontalAlignment','left','BackgroundColor',[0.8,0.8,0.8]);

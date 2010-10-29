@@ -9,18 +9,18 @@ classdef maininput < input.userinput
    end
    methods
       %Constructor:
-      function obj = maininput(h,src1,pedit,plbl,pevt)
-         obj.Parent = h.main;
+      function obj = maininput(hmain,src1,pedit,plbl,pevt)
+         obj.Parent = hmain;
          obj.ListeningTo = src1;
          obj.InputState = pevt(1);
          obj.IniData = struct('pedit',{pedit},'plbl',{plbl},'pevt',{pevt});
          Hloc = getappdata(obj.Parent,'uihandles');
          
-         cdat.setobj(h,obj,'MODAL');
+         cdat.setobj(hmain,obj,'MODAL');
          
          for i=1:length(pedit{1}(:,1))
-            stredit = ['edit',num2str(i)];
-            %stredit = cdat.uistr(h,'edit');
+           %stredit = ['edit',num2str(i)];
+            stredit = cdat.uistr(hmain,'edit');
             strEntry = ['Entry',num2str(i)];
          
             Hloc.(stredit) = uicontrol('Style','edit','String',pedit{2}(i,:),'Position',pedit{1}(i,:),'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt));
@@ -30,8 +30,8 @@ classdef maininput < input.userinput
          end
          
          for i=1:length(plbl{1}(:,1))
-            strlbl = ['lbl',num2str(i)];
-            %strlbl = cdat.uistr(h,'lbl');
+            %strlbl = ['lbl',num2str(i)];
+            strlbl = cdat.uistr(hmain,'lbl');
             
             Hloc.(strlbl) = uicontrol('Style','text','String',plbl{2}{i,:},'Position',plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
             setappdata(obj.Parent,'uihandles',Hloc);

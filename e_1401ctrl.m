@@ -73,18 +73,18 @@ PREFS = struct(...
    %Intermediate callbacks:
    %(necessary due to definition error using direct function handle callback; seems to be ignored using an intermediate callback)
    function prefcall(src,evt)
-      PREFGUI = prefgui(H);
+      PREFGUI = prefgui(H.main);
    end
 
    function sesscall(src,evt)
-      SESSGUI = sessgui(H);
+      SESSGUI = sessgui(H.main);
    end
 
 %--INITIALIZATION PROCEDURE
    %Constructor methods of GFX-objects (instances of the uicontrol/ -menu and figure classes) return handles for reference; all GFX-handles are stored in the "H"-structure   
    %Create main GUI:
-   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
-   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
+   H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none');
+   %H.main = figure('Visible','off','Position',[0,0,675,325],'Name','1401 CONTROLCENTER','MenuBar','none','CloseRequestFcn',@closereq);
    H.mfile = uimenu(H.main,'Label','File');
    H.msess = uimenu(H.mfile,'Label','Session','Callback',@sesscall);
    %H.msubj = uimenu(H.mfile,'Label','Subject');
@@ -100,8 +100,8 @@ PREFS = struct(...
    power1401startup; %//Make depend on former calls; implement at other point!
    
    %Invoke instances of general control classes:
-   DAT = cdat(H);
-   PRGMODE = cmode(H);
+   DAT = cdat(H.main);
+   PRGMODE = cmode(H.main);
    
    %Update global data structures from application data:
    H = getappdata(H.main,'uihandles');

@@ -6,8 +6,8 @@ classdef prefgui < handle
    end
    methods
       %Constructor: //Initialize user options GUI & load default preferences; integrate in obj-management routine; edit destructor correspondingly
-      function obj = prefgui(h)
-         obj.Parent = h.main;
+      function obj = prefgui(hmain)
+         obj.Parent = hmain;
          Hloc = getappdata(obj.Parent,'uihandles');
          
          %Invoke GUI:
@@ -15,7 +15,7 @@ classdef prefgui < handle
          setappdata(obj.Parent,'uihandles',Hloc);
          
          %Build local GUI elements: //here new concrete class prefinput!
-         PREFINPUT = input.prefinput(Hloc); %auch manuell zerstören?
+         PREFINPUT = input.prefinput(hmain); %auch manuell zerstören?
          
          movegui(Hloc.pref,'center');
          set(Hloc.pref,'Visible','on');
