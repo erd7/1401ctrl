@@ -20,20 +20,22 @@ classdef maininput < input.userinput
          
          for i=1:length(pedit{1}(:,1))
             stredit = ['edit',num2str(i)];
+            %stredit = cdat.uistr(h,'edit');
             strEntry = ['Entry',num2str(i)];
          
             Hloc.(stredit) = uicontrol('Style','edit','String',pedit{2}(i,:),'Position',pedit{1}(i,:),'BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt));
+            setappdata(obj.Parent,'uihandles',Hloc);
             
             obj.UserInput.(strEntry) = str2double(get(Hloc.(stredit),'String'));
          end
          
          for i=1:length(plbl{1}(:,1))
             strlbl = ['lbl',num2str(i)];
+            %strlbl = cdat.uistr(h,'lbl');
             
             Hloc.(strlbl) = uicontrol('Style','text','String',plbl{2}{i,:},'Position',plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+            setappdata(obj.Parent,'uihandles',Hloc);
          end
-         
-         setappdata(obj.Parent,'uihandles',Hloc);
          
          %Rearrange graphic components:
          for i=1:length(pedit{1}(:,1))

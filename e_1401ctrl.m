@@ -90,7 +90,7 @@ PREFS = struct(...
    %H.msubj = uimenu(H.mfile,'Label','Subject');
    H.medit = uimenu(H.main,'Label','Edit');
    H.mprefs = uimenu(H.medit,'Label','Preferences','Callback',@prefcall);
-   
+     
    %Set application data (necessary after every data update invocation):
    setappdata(H.main,'uihandles',H);
    setappdata(H.main,'appdata',APPDAT);

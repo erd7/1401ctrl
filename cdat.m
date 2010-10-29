@@ -1,6 +1,6 @@
 %Class collects and manages critical program control data //oder nur statische methoden?
 %FIRST CLASS TO IMPLEMENT!
-%AUCH 1401 STATUS!
+%AUCH 1401 STATUS! //FKT ZUR ROUTINEMÄSSIGEN DEF VON DATASTRUCT!
 classdef cdat < handle
    properties (SetAccess = private)
       TimeStamp
@@ -20,6 +20,19 @@ classdef cdat < handle
       end
    end
    methods (Static)
+      function r = uistr(h,prop)
+         Hloc = getappdata(h.main,'uihandles');
+         
+         m = 0;
+         fn = fieldnames(Hloc);
+         
+         for i=1:length(fn)         
+            if isempty(strfind(fn{i},prop)) == 0 && strfind(fn{i},prop) == 1 %//Currently constrained to once and only the very first
+               m = m+1;
+            end
+         end
+         r = [prop,int2str(m+1)];
+      end
       function r = classname(src)
          r = class(src);
          dotpos = strfind(r,'.');
@@ -66,8 +79,6 @@ classdef cdat < handle
          end
             setappdata(h.main,'appdata',APPDATloc);
             clear fn APPDATloc;
-      end
-      function gmf() %//vorher smf; besser: Property!
       end
    end
 end
