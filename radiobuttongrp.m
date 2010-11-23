@@ -3,8 +3,7 @@
 %+Subklasse: Konkrete implementierung erst in der Refreshfunktion in Subklasse!
 classdef radiobuttongrp < handle
    properties
-      RadioState1 = 1;
-      RadioState2 = 0;
+      RadioState = 1;
       ContainerPosition
       ButtonString1
       ButtonString2
@@ -12,8 +11,6 @@ classdef radiobuttongrp < handle
       Calling
    end
    events
-      SelRadio1
-      SelRadio2
       NewInputAlert
    end
    methods
@@ -32,39 +29,22 @@ classdef radiobuttongrp < handle
          Hloc.radio1 = uicontrol('Style','Radio','String',lbl1,'pos',[10,8,40,15],'BackgroundColor',[0.8,0.8,0.8],'parent',Hloc.radiogrp,'Selected','on','SelectionHighlight','off'); %default selection
          Hloc.radio2 = uicontrol('Style','Radio','String',lbl2,'pos',[50,8,40,15],'BackgroundColor',[0.8,0.8,0.8],'parent',Hloc.radiogrp,'Selected','off');
          setappdata(hmain,'uihandles',Hloc);
-         
-         %Listen to own event:
-         addlistener(obj,'SelRadio1',@(src,evt)RefreshGUI(obj,src,evt,1));
-         addlistener(obj,'SelRadio2',@(src,evt)RefreshGUI(obj,src,evt,2));
-         
-         %Following block probably reducible:
-         if get(Hloc.radio1,'Value') == get(Hloc.radio1,'Max') && get(Hloc.radio2,'Value') == get(Hloc.radio2,'Min')
-            obj.RadioState1 = 1;
-            obj.RadioState2 = 0;
-            notify(obj,'SelRadio1');
-         elseif get(Hloc.radio1,'Value') == get(Hloc.radio1,'Min') && get(Hloc.radio2,'Value') == get(Hloc.radio2,'Max')
-            obj.RadioState1 = 0;
-            obj.RadioState2 = 1;
-            notify(obj,'SelRadio2');
-         end
       end
-      %Internal callback & event notifier:
-      %RadioStates redundant?
+      %Internal callback:
+      %RadioState redundant?
       %Selection switches are performed automatically by the button group!
       function RadioCheck(obj,hmain,src,evt)
          Hloc = getappdata(hmain,'uihandles');
          
          if evt.NewValue == Hloc.radio2
-            obj.RadioState1 = 0;
-            obj.RadioState2 = 1;
-            notify(obj,'SelRadio2');
+            obj.RadioState = 2;
+            obj.redraw(obj.RadioState);
          elseif evt.NewValue == Hloc.radio1
-            obj.RadioState1 = 1;
-            obj.RadioState2 = 0;
-            notify(obj,'SelRadio1');
+            obj.RadioState = 1;
+            obj.redraw(obj.RadioState);
          end
       end
-      function RefreshGUI(obj,src,evt,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
+      function redraw(obj,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
          Hloc = getappdata(obj.Parent,'uihandles');
          
          %Destroy every uicontrol obj that is related to maininput (make independent!) (call maininput destructor directly?):
@@ -80,6 +60,7 @@ classdef radiobuttongrp < handle
          
          setappdata(obj.Parent,'uihandles',Hloc);
          
+         %//Hier variabilität der cases im Argument berücksichtigen und mit schleife cases durchiterieren!
          if mod == 1               
             for i=1:length(obj.Calling.IniData.pedit{1}(:,1))
                stredit = cdat.uistr(obj.Parent,obj.Calling,'edit');
