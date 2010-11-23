@@ -1,0 +1,32 @@
+%Class collects and stores user input data & and generates corresponding GUI elements
+classdef userinput < handle
+   properties %more properties for further class implementation of the uicontrol object
+      Entry1
+      Entry2
+      ButtonHandle1
+      ButtonHandle2
+      ButtonPosition1
+      ButtonPosition2
+      ButtonString1
+      ButtonString2
+   end
+   events
+      NewInputAlert
+   end
+   methods
+      %Constructor
+      function obj = userinput(inpobj1,inpobj2)
+         obj.Entry1 = str2double(get(inpobj1,'String'));
+         obj.Entry2 = inpobj2;
+         
+         notify(obj,'NewInputAlert');
+      end
+      %Update method is referenced as a uicontrol object callback
+      function UpdateInput(obj,inpobj1,inpobj2)
+         obj.Entry1 = inp1;
+         obj.Entry2 = inp2;
+         
+         notify(obj,'NewInputAlert');
+      end
+   end
+end

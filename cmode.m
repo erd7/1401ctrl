@@ -5,7 +5,7 @@ classdef cmode < handle
    methods
       %Constructor:
       function obj = cmode(hmain)
-         %Generate % process or load icon data:
+         %Generate, process or load icon data:
          icon = load('ICON_dot.mat','icon');
          icon = icon.icon;
          
@@ -43,7 +43,7 @@ classdef cmode < handle
                   500,210,50,15;...
                   500,240,50,15],...
                   {'OFF:';'AMP (V):';'FRQ (Hz):'}};
-               inievt = [1,1];
+               inievt = [1];
                initggl =...
                   {[225,15,50,25],...
                   'SAMPLE',...
@@ -51,13 +51,10 @@ classdef cmode < handle
             
                %Delete all invoked objects (related to other program mode) and call new invocations:
                cdat.delobj(hmain,'MODAL');
-            
-               %Invoke GUI class objects:
-               %TOGGLEBTTN = togglebutton(Hloc,[225,15,50,25],'SAMPLE',1);
-               RADIOGRP = radiobuttongrp(hmain,[0.738,0.85,0.16,0.1],'SIN','CC');
-   
+                       
                %Invoke instances of control classes (with private GUI elements due to user interface function):
-               MAININPUT = input.maininput(hmain,RADIOGRP,iniedit,inilbl,inievt);
+               MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
+               RADIOGRP = radiobuttongrp(hmain,MAININPUT,[0.738,0.85,0.16,0.1],'SIN','CC');
                SIGNAL = cgen_signal(hmain,MAININPUT,40000); %Make data length independet from user requirementss! 1s at 40kHz for mode 1.
                GUIOUT = output.guiout_m1(hmain,SIGNAL);
                ACCESS1401 = caccess1401(hmain,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse? --> obj-handle- sammelstruktur nötig!
@@ -79,7 +76,7 @@ classdef cmode < handle
                   25,55,50,15;...
                   25,85,50,15],...
                   {'DUR (s):';'STEPS:';'SUBDIV:'}};
-               inievt = [3,0]; %//second param redundant?
+               inievt = [3];
                initggl =...
                   {[200,25,100,25],...
                   'START SEQ.',...
@@ -90,7 +87,8 @@ classdef cmode < handle
 
                %Invoke instances of control classes (with private GUI elements with respect to user interface function):
                %Second param is dummy argument because of not having finished complete reusability yet:
-               MAININPUT = input.maininput(hmain,0,iniedit,inilbl,inievt);
+
+               MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(hmain,MAININPUT,10000); %10s at 1kHz for mode 2
                LOAD = setup.setup1(hmain,SIGNAL);
                LOG = clog(hmain,SIGNAL);
@@ -111,7 +109,7 @@ classdef cmode < handle
                   {[25,25,50,15;...
                   25,55,50,15]
                   {'DUR (s):';'LVL:'}};
-               inievt = [4,0]; %//second param redundant?
+               inievt = [4];
                initggl =...
                   {[200,25,100,25],...
                   'START SEQ.',...
@@ -122,7 +120,7 @@ classdef cmode < handle
                
                %Invoke instances of control classes (with private GUI elements with respect to user interface function):
                %Second param is dummy argument because of not having finished complete reusability yet:
-               MAININPUT = input.maininput(hmain,0,iniedit,inilbl,inievt);
+               MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(hmain,MAININPUT,1280);
                LOAD = setup.setup2(hmain,SIGNAL);
                EXEC1401 = crun1401(hmain,initggl,SIGNAL,MAININPUT,LOAD);
@@ -142,14 +140,14 @@ classdef cmode < handle
                   {[25,25,50,15;...
                   25,55,50,15]...
                   {'DUR (s):';'Cycles:'}};
-               inievt = [4,0]; %//second param redundant?
+               inievt = [4];
                
                %Delete all invoked objects (related to other program mode) and call new invocations:
                cdat.delobj(hmain,'MODAL');
                
                %Invoke instances of control classes (with private GUI elements with respect to user interface function):
                %Second param is dummy argument because of not having finished complete reusability yet:
-               MAININPUT = input.maininput(hmain,0,iniedit,inilbl,inievt);
+               MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
                SIGNAL = cgen_signal(hmain,MAININPUT,1280);
                EXEC1401 = setup.setup3(hmain,SIGNAL);
                %GUIOUT = output.guiout_m3(hmain,SIGNAL);

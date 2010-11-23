@@ -1,0 +1,81 @@
+%ANALYSIS- SCRIPT FOR EXPERIMENT: "tRNS: U-shaped"
+xlsfile = 'D:\PROGWORKS\MATLAB\1401ctrl\analyze\DATA_MRRBP_tRNSUshape.xls';
+lvls = 10;
+subjs = {'Maria','Rouven'};
+
+for i=1:length(subjs)   
+   DAT.emgraw = xlsread(xlsfile,i,'b6:d125');
+   DAT.lvlraw = xlsread(xlsfile,i,'j6:j125');
+     
+   %Zunächst nur FDI!
+   for j=1:lvls
+      m = 1;
+      lvlstr = ['lvl',num2str(j)];
+      for k=1:length(DAT.emgraw(:,2))
+         if DAT.lvlraw(k) == j
+         DAT.(subjs{i}).(lvlstr)(m) = DAT.emgraw(k,2);
+         m = m+1;
+         end
+      end
+   end
+end
+DAT = rmfield(DAT,'emgraw');
+DAT = rmfield(DAT,'lvlraw');
+
+%Individualdaten (nur für FDI); zunächst ignorieren
+snglsbj = 0;
+if snglsbj == 1
+    figure('Name','FDI - virtual lesion?');
+    subplot(3,1,1);
+    boxplot(FDI(1).fdi),grid on,title('pre');
+    subplot(3,1,2);
+    boxplot(FDI(2).fdi),grid on,title('post');
+    subplot(3,1,3);
+    boxplot(FDI(1).fdi - FDI(2).fdi),grid on,title('pre - post');
+    
+    figure, set(gcf,'name','FDI - microplasticity (pre)?')
+    subplot(3,1,1),
+    boxplot(FDI(1).fdi - FDI(1).apb),grid on,title('cued - APB')
+    subplot(3,1,2),
+    boxplot(FDI(1).fdi - FDI(1).adm),grid on,title('cued - ADM')
+    subplot(3,1,3),
+    boxplot(FDI(1).fdi - FDI(1).cfdi),grid on,title('cued - cFDI')
+    
+    figure, set(gcf,'name','FDI - microplasticity (post)?')
+    subplot(3,1,1),
+    boxplot(FDI(2).fdi - FDI(2).apb),grid on,title('cued - APB')
+    subplot(3,1,2),
+    boxplot(FDI(2).fdi - FDI(2).adm),grid on,title('cued - ADM')
+    subplot(3,1,3),
+    boxplot(FDI(2).fdi - FDI(2).cfdi),grid on,title('cued - cFDI')
+end
+
+%Gruppendaten: //s. "grouped" prop für bar für kontrollfinger! //hier auch datensätze speichern --> für stat test!
+fn = fieldnames(DAT);
+
+for i=1:lvls
+   lvlstr = ['lvl',num2str(i)];
+   
+   for j=1:length(subjs)
+      tmp((j-1)*length(DAT.(fn{j}).(lvlstr))+1:j*length(DAT.(fn{j}).(lvlstr))) = DAT.(fn{j}).(lvlstr);
+   end
+   
+   DAT.GROUP.(lvlstr).mean = mean(tmp);
+   DAT.GROUP.(lvlstr).std = std(tmp);
+   DAT.GROUP.(lvlstr).err = std(tmp)/sqrt(length(tmp));
+   
+   DAT.GROUP.all(i) = DAT.GROUP.(lvlstr).mean;
+end
+
+
+
+figure('Name','SR mit tRNS in M1','Position',[0,0,800,600],'Color',[1,1,1]);
+
+bar(DAT.GROUP.all,'FaceColor',[1,1,1],'LineWidth',3); hold on;
+for i=1:lvls
+   lvlstr = ['lvl',num2str(i)];
+   errorbar(DAT.GROUP.(lvlstr).mean,std(tmp)/sqrt(length(tmp)),['x','k']); %s. Konfidenzintervall
+[h,p] = ttest(tmp(:,1),tmp(:,2));
+text(2,mean(tmp(:,2))+std(tmp(:,2))/sqrt(length(tmp(:,2))),['*p = ' num2str(p)]); %y test position at the upper end of the error bar
+set(gca,'XTickLabel',{'Diff. pre','Diff. post'});
+title(['FDI vs cFDI; t = ' num2str(h)]); ylabel('mean MEPs');

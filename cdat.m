@@ -20,18 +20,19 @@ classdef cdat < handle
       end
    end
    methods (Static)
-      function r = uistr(hmain,prop)
+      function r = uistr(hmain,src,prop)
          Hloc = getappdata(hmain,'uihandles');
          
          m = 0;
+         callingobj = cdat.classname(src);
          fn = fieldnames(Hloc);
-         
+                  
          for i=1:length(fn)         
-            if isempty(strfind(fn{i},prop)) == 0 && strfind(fn{i},prop) == 1 %//Currently constrained to once and only the very first
+            if isempty(strfind(fn{i},callingobj)) == 0 && isempty(strfind(fn{i},prop)) == 0 %//Currently constrained to once and only the very first
                m = m+1;
             end
          end
-         r = [prop,int2str(m+1)];
+         r = [callingobj,'_',prop,int2str(m+1)];
       end
       function r = classname(src)
          r = class(src);

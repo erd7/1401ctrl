@@ -1,0 +1,10 @@
+%Interface class for collection and storage of user input data
+classdef guiout < hgsetget
+   properties
+   end
+   events
+   end
+   methods (Abstract)
+      UpdateInput(obj,src,evt)
+   end
+end

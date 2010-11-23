@@ -1,0 +1,5 @@
+function r = randireinit(imax)
+seed = clock;
+seed = floor(seed(6));
+
+floor(3000*randi(seed)/seed)
