@@ -36,57 +36,61 @@ classdef mainredraw < input.maininput
          
          if evt.NewValue == Hloc.radio2
             obj.RadioState = 2;
-            obj.redraw(obj.Calling,obj.RadioState);
+            obj.redraw(obj.RadioState);
          elseif evt.NewValue == Hloc.radio1
             obj.RadioState = 1;
-            obj.redraw(obj.Calling,obj.RadioState);
+            obj.redraw(obj.RadioState);
          end
       end
-      function redraw(obj,del,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
-         obj.redraw@input.maininput(del,mod);
+      function redraw(obj,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
+         obj.redraw@input.maininput(mod);
          
          %//Hier variabilität der cases im Argument berücksichtigen und mit schleife cases durchiterieren!
          if mod == 1               
-            for i=1:length(del.IniData.pedit{1}(:,1))
-               stredit = cdat.uistr(obj.Parent,del,'edit');
+            for i=1:length(obj.IniData.pedit{1}(:,1))
+               stredit = cdat.uistr(obj.Parent,obj,'edit');
      
-               Hloc.(stredit) = uicontrol('Style','edit','String',del.IniData.pedit{2}(i,:),'Position',del.IniData.pedit{1}(i,:),'BackgroundColor',[1,1,1],'Callback',@(src,evt)del.UpdateInput(src,evt));
+               Hloc = getappdata(obj.Parent,'uihandles');
+               Hloc.(stredit) = uicontrol('Style','edit','String',obj.IniData.pedit{2}(i,:),'Position',obj.IniData.pedit{1}(i,:),'BackgroundColor',[1,1,1],'Callback',@(src,evt)obj.UpdateInput(src,evt));
                setappdata(obj.Parent,'uihandles',Hloc);
             end
     
-            for i=1:length(del.IniData.plbl{1}(:,1))
-               strlbl = cdat.uistr(obj.Parent,del,'lbl');
+            for i=1:length(obj.IniData.plbl{1}(:,1))
+               strlbl = cdat.uistr(obj.Parent,obj,'lbl');
             
-               Hloc.(strlbl) = uicontrol('Style','text','String',del.IniData.plbl{2}{i,:},'Position',del.IniData.plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+               Hloc = getappdata(obj.Parent,'uihandles');
+               Hloc.(strlbl) = uicontrol('Style','text','String',obj.IniData.plbl{2}{i,:},'Position',obj.IniData.plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
                setappdata(obj.Parent,'uihandles',Hloc);
             end
          
             %Rearrange graphic components:
-            for i=1:length(del.IniData.pedit{1}(:,1))
-               stredit = [cdat.classname(del),'_','edit',num2str(i)];
-               strlbl = [cdat.classname(del),'_','edit',num2str(i)];
+            for i=1:length(obj.IniData.pedit{1}(:,1))
+               stredit = [cdat.classname(obj),'_','edit',num2str(i)];
+               strlbl = [cdat.classname(obj),'_','edit',num2str(i)];
             
                align([Hloc.(strlbl),Hloc.(stredit)],'VerticalAlignment','Middle');
             end
                
-            del.InputState = 1;
-            del.UpdateInput();
+            obj.InputState = 1;
+            obj.UpdateInput();
             notify(obj,'NewInputAlert');
          elseif mod == 2
                
-            stredit = cdat.uistr(obj.Parent,del,'edit');               
-            Hloc.(stredit) = uicontrol('Style','edit','String','1','Position',[550,240,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)del.UpdateInput(src,evt));
+            stredit = cdat.uistr(obj.Parent,obj,'edit');               
+            Hloc = getappdata(obj.Parent,'uihandles');
+            Hloc.(stredit) = uicontrol('Style','edit','String','1','Position',[550,240,25,25],'BackgroundColor',[1,1,1],'Callback',@(src,evt)obj.UpdateInput(src,evt));
             setappdata(obj.Parent,'uihandles',Hloc);
                
-            strlbl = cdat.uistr(obj.Parent,del,'lbl');
+            strlbl = cdat.uistr(obj.Parent,obj,'lbl');
+            Hloc = getappdata(obj.Parent,'uihandles');
             Hloc.(strlbl) = uicontrol('Style','text','String','VOLT (V):','Position',[500,240,50,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
             setappdata(obj.Parent,'uihandles',Hloc);
                
             %Rearrange graphic components:
             align([Hloc.(stredit),Hloc.(strlbl)],'VerticalAlignment','Middle');
                
-            del.InputState = 2;
-            del.UpdateInput();
+            obj.InputState = 2;
+            obj.UpdateInput();
             notify(obj,'NewInputAlert');
          end
       end

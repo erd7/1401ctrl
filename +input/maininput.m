@@ -1,5 +1,6 @@
 %Implementation of main GUI input class as userinput subclass
 %Code reusable due to initialization arguments
+%Also include IniData struct into redraw?
 classdef maininput < input.userinput
    properties
       Parent
@@ -70,14 +71,14 @@ classdef maininput < input.userinput
          
          notify(obj,'NewInputAlert');
       end
-      function deluiobj(obj,del) %//nur auf eigene obj. beziehen, sodass del param redundant ist?
+      function deluiobj(obj) %//nur auf eigene obj. beziehen, sodass del param redundant ist!
          Hloc = getappdata(obj.Parent,'uihandles');
          
          fn = fieldnames(Hloc);
          
          %Destroy every uicontrol obj that is related to constructing instance specified by del:         
          for i=1:length(fn)
-            if isempty(strfind(fn{i},cdat.classname(del))) == 0
+            if isempty(strfind(fn{i},cdat.classname(obj))) == 0
                delete(Hloc.(fn{i}));
                Hloc = rmfield(Hloc,fn{i});
             end
@@ -85,12 +86,12 @@ classdef maininput < input.userinput
          
          setappdata(obj.Parent,'uihandles',Hloc);
       end
-      function redraw(obj,del,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
-         obj.deluiobj(del);
+      function redraw(obj,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen! %//Mache privat und nur für das eigene objekt!
+         obj.deluiobj();
       end
       %Destructor:
       function delete(obj)
-         obj.deluiobj(obj);
+         obj.deluiobj();
       end
    end
 end
