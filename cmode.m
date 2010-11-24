@@ -53,9 +53,8 @@ classdef cmode < handle
                cdat.delobj(hmain,'MODAL');
                        
                %Invoke instances of control classes (with private GUI elements due to user interface function):
-               MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
-               RADIOGRP = radiobuttongrp(hmain,MAININPUT,[0.738,0.85,0.16,0.1],'SIN','CC');
-               SIGNAL = cgen_signal(hmain,MAININPUT,40000); %Make data length independet from user requirementss! 1s at 40kHz for mode 1.
+               MAININPUT = input.mainredraw(hmain,iniedit,inilbl,inievt,[0.738,0.85,0.16,0.1],'SIN','CC');
+               SIGNAL = cgen_signal(hmain,MAININPUT,40000); %Make data length independent from user requirementss! 1s at 40kHz for mode 1.
                GUIOUT = output.guiout_m1(hmain,SIGNAL);
                ACCESS1401 = caccess1401(hmain,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse? --> obj-handle- sammelstruktur nötig!
 

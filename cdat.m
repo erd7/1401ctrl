@@ -53,7 +53,7 @@ classdef cdat < handle
             fn = fieldnames(APPDATloc.CURRENTOBJ.(cat));
             
             for i=1:length(fn) %//Consider numbers bigger than one digit!
-               if sum(strfind(fn{i},cname)) ~= 0 && str2num(cname(end)) >= instnum
+               if sum(strfind(fn{i},cname)) ~= 0 && str2double(cname(end)) >= instnum
                   instnum = instnum+1;
                end
             end

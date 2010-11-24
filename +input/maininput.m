@@ -11,7 +11,6 @@ classdef maininput < input.userinput
       %Constructor:
       function obj = maininput(hmain,pedit,plbl,pevt)
          obj.Parent = hmain;
-         %obj.ListeningTo = src1;
          obj.InputState = pevt(1);
          obj.IniData = struct('pedit',{pedit},'plbl',{plbl},'pevt',{pevt});
          Hloc = getappdata(obj.Parent,'uihandles');
@@ -71,15 +70,14 @@ classdef maininput < input.userinput
          
          notify(obj,'NewInputAlert');
       end
-      %Destructor:
-      function delete(obj)
+      function deluiobj(obj,del) %//nur auf eigene obj. beziehen, sodass del param redundant ist?
          Hloc = getappdata(obj.Parent,'uihandles');
          
          fn = fieldnames(Hloc);
          
-         %Destroy every uicontrol obj that is related to constructing instance:         
+         %Destroy every uicontrol obj that is related to constructing instance specified by del:         
          for i=1:length(fn)
-            if isempty(strfind(fn{i},cdat.classname(obj))) == 0
+            if isempty(strfind(fn{i},cdat.classname(del))) == 0
                delete(Hloc.(fn{i}));
                Hloc = rmfield(Hloc,fn{i});
             end
@@ -87,7 +85,12 @@ classdef maininput < input.userinput
          
          setappdata(obj.Parent,'uihandles',Hloc);
       end
-   end
-   methods (Abstract)
+      function redraw(obj,del,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
+         obj.deluiobj(del);
+      end
+      %Destructor:
+      function delete(obj)
+         obj.deluiobj(obj);
+      end
    end
 end
