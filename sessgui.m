@@ -25,7 +25,17 @@ classdef sessgui < handle
          %Hier am besten APPDATA update!
          Hloc = getappdata(obj.Parent,'uihandles');
          fig = Hloc.sess;
-         Hloc = rmfield(Hloc,{'sess','lbls1'});
+         
+         fn = fieldnames(Hloc);
+         
+         %Remove every registration entry of related uicontrol objects:         
+         for i=1:length(fn)
+            if isempty(strfind(fn{i},'sessinput')) == 0
+               Hloc = rmfield(Hloc,fn{i});
+            end
+         end
+                  
+         Hloc = rmfield(Hloc,{'sess'});
          setappdata(obj.Parent,'uihandles',Hloc);
          
          delete(fig); %Destroy graphic handle object: figure; all uicontrol objects are deleted automatically

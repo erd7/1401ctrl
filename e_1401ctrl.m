@@ -1,7 +1,7 @@
 function r = e_1401ctrl()
 %power1401 ANALOGUE AND DIG. TRIGGER OUTPUT
 %CONTROL CENTER main program:
-%Construction routines & initialization
+%Main initialization % implementation file
 %RBP (e), Bln2010
 
 %NOTE: RND GENS ARE INITIALIZED WITH INCREMENT UP FROM MATLAB START PER DEFAULT!!1

@@ -1,4 +1,5 @@
 %Class builds user options-GUI; object is being destroyed explicitly on close request (prefs data management through global struct)
+%Designe eigene Menuitem-Superklasse und konkrete Implementierungssubklassen! (Interface/Completion)
 classdef prefgui < handle
    properties
       Parent
@@ -23,9 +24,20 @@ classdef prefgui < handle
       %Internal close request callback:
       function CloseReq(obj,src,evt)
          %Hier am besten PREFS update!
+         %prefinput tag deletion here! make prefinput subclass of maininput (or both of userinput?) and call from there!
          Hloc = getappdata(obj.Parent,'uihandles');
          fig = Hloc.pref;
-         Hloc = rmfield(Hloc,{'pref','lblp1'});
+         
+         fn = fieldnames(Hloc);
+         
+         %Remove every registration entry of related uicontrol objects:         
+         for i=1:length(fn)
+            if isempty(strfind(fn{i},'prefinput')) == 0
+               Hloc = rmfield(Hloc,fn{i});
+            end
+         end
+                  
+         Hloc = rmfield(Hloc,{'pref'});
          setappdata(obj.Parent,'uihandles',Hloc);
          
          delete(fig); %Destroy graphic handle object: figure; all uicontrol objects are deleted automatically

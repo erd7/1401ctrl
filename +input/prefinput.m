@@ -38,7 +38,7 @@ classdef prefinput < input.userinput
       function UpdateInput(obj,src,evt)
          Hloc = getappdata(obj.Parent,'uihandles');
          
-         obj.UserInput.Entry1 = get(Hloc.editp1,'String');
+         obj.UserInput.Entry1 = get(Hloc.prefinput_edit1,'String');
          
          %Verarbeitungsschritt vorübergehend hier einfügen:
          obj.Prefs = getappdata(obj.Parent,'preferences');

@@ -11,11 +11,11 @@ classdef sessinput < input.userinput
          Hloc = getappdata(hmain,'uihandles');
          obj.Settings = getappdata(obj.Parent,'appdata');
          
-         stredit = cdat.uistr(hmain,'edit');
+         stredit = cdat.uistr(hmain,obj,'edit');
          Hloc.(stredit) = uicontrol('Style','edit','String',obj.Settings.researcher,'Position',[25,350,200,25],'HorizontalAlignment','left','BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
          setappdata(hmain,'uihandles',Hloc);
          
-         stredit = cdat.uistr(hmain,'edit');
+         stredit = cdat.uistr(hmain,obj,'edit');
          Hloc.(stredit) = uicontrol('Style','edit','String',obj.Settings.subject,'Position',[25,300,200,25],'HorizontalAlignment','left','BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
          setappdata(hmain,'uihandles',Hloc);
          
@@ -23,7 +23,7 @@ classdef sessinput < input.userinput
          Hloc.lbls2 = uicontrol('Style','text','String','Subject:','Position',[25,325,200,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
          setappdata(obj.Parent,'uihandles',Hloc);
          
-         obj.UserInput.Entry1 = get(Hloc.edit1,'String');
+         obj.UserInput.Entry1 = get(Hloc.sessinput_edit1,'String');
          %Appdata update regarding preferences redundant at this point
          
          notify(obj,'NewInputAlert'); %probably redundant
@@ -31,8 +31,8 @@ classdef sessinput < input.userinput
       function UpdateInput(obj,src,evt)
          Hloc = getappdata(obj.Parent,'uihandles');
          
-         obj.UserInput.Entry1 = get(Hloc.edits1,'String');
-         obj.UserInput.Entry2 = get(Hloc.edits2,'String');
+         obj.UserInput.Entry1 = get(Hloc.sessinput_edit1,'String');
+         obj.UserInput.Entry2 = get(Hloc.sessinput_edit2,'String');
          
          %Verarbeitungsschritt vorübergehend hier einfügen:
          obj.Settings = getappdata(obj.Parent,'appdata');
