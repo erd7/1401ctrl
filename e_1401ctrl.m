@@ -10,7 +10,6 @@ function r = e_1401ctrl()
 %Make startup&shutdown fct static methods
 %nota: MATLAB objekterzeugung mittels eines eigens def. constructors bedeutet einen std-matlabconstructor zu überladen!
 %Gemeinsame interface klasse für 1401 ansteuerungsklassen (toggle gemeinsam etc.)
-%übergeordnete sammelklasse, die immer mitübergeben wird und die hauptdatenstrukturen updatet!
 %anstelle von obj.Parent gcf oder ähnliches! .. eigene übergeordnete statische methode?
 %X--anpassbar designen: RUNCMD vorerst unterlassen, programmschreiben via MATLAB --> Signalupdate möglich! (RUNCMD nur um die eingabe von 1401 testprogrammen zu erleichtern)
 %TODO: entry (amp) max. 5volts/ min -5volts; mit offset vereinbaren! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
@@ -23,17 +22,14 @@ function r = e_1401ctrl()
 %Argumente in der initialisierungsfunktion grundsätzlich als erweiterbare strukturen, die im ganzen übergeben werden? (z.B. für weitere bedienelemente) --> s. a. variable Argumente!
 %Implementieren (im zu implementierenden Optionsmenü mit pre sample data): um hostabhängige fehler abzufangen: increase datapacksize/ decrease sampling rate
 %Erzeugerklasse für arrowbuttons! Super- und subklasse? s.a. Slidermöglichkeit!
-%Alle uihandles als appdata oder nur interaktionsobjekte?
 %zentrale verarbeitungsroutinen (interface classes); trennen von output classes?
 %Interaktionsdiagramm für Objekte auf allen ebenen entwickeln --> Programmlogik!
-%PRINZIP: Handle struct stets vollständig übergeben- aus entwicklungstechnischen gründen (z.B. für debugging) zusätzlich handle appdate mitführen!
 %PRINZIP: APPDATA NIEMALS INNERHALB EINER ÜBERGEORDNETEN ROUTINE UPDATEN, NACHDEM IN SUBROUTINEN GEUPDATET WURDE!
 % --> stets auf individuelle gfx obj handlevars achten!
 %nota: nicht unkritisch variablen globalisieren, indem sie als object property deklariert werden!
 %--> noch unstimmigkeit im main closerq (matlab standardfkt wird überladen!)!
 %--> ERSTELLE GRUNDSÄTZLICH WIEDERVERWENDBARE IMPLEMENTIERUNGSKLASSEN; ENTSPRECHENDE OBERKLASSEN --> VERW. IN SUBKLASSEN AUCH OBERKLASSEN KONSTRUKTOREN UND VARIABLES ARGUMENT!
 %--> Toggleclasse mit internem callback konzipieren: interface klasse mit gemeinsamkeiten; sub für die jew. implementierung --> toggle als privates gui element! --> dennoch toggleevent, um andere objekte für vermutliche änderungen im betriebsmodus zu benachrichtigen!
-%--> nicht togglecallbacks, sondern funktionsbezogen!
 
 %--Generate random number stream for this session using combined multiple recursive rng seeded with system clock:
 RandStream.setDefaultStream(RandStream('mrg32k3a','seed',sum(clock)));

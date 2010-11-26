@@ -3,6 +3,7 @@ classdef sessgui < handle
    properties
       Parent
       Prefs
+      Interface
    end
    methods
       %Constructor: //Initialize session settings GUI & load default values
@@ -15,30 +16,36 @@ classdef sessgui < handle
          setappdata(obj.Parent,'uihandles',Hloc);
          
          %Build local GUI elements: //here new concrete class prefinput!
-         SESSINPUT = input.sessinput(hmain); %auch manuell zerstören?
+         SESSINPUT = input.sessinput(hmain);
+         obj.Interface = SESSINPUT;
+         
          
          movegui(Hloc.sess,'center');
          set(Hloc.sess,'Visible','on');
       end
       %Internal close request callback:
       function CloseReq(obj,src,evt)
-         %Hier am besten APPDATA update!
-         Hloc = getappdata(obj.Parent,'uihandles');
-         fig = Hloc.sess;
-         
-         fn = fieldnames(Hloc);
-         
-         %Remove every registration entry of related uicontrol objects:         
-         for i=1:length(fn)
-            if isempty(strfind(fn{i},'sessinput')) == 0
-               Hloc = rmfield(Hloc,fn{i});
+         APPDATloc = getappdata(obj.Parent,'appdata');
+                  
+         %Get number of prefinput objects:
+         if isempty(APPDATloc.CURRENTOBJ.MODAL) == 0
+            fn = fieldnames(APPDATloc.CURRENTOBJ.MODAL);
+            
+            for i=1:length(fn)
+               if isempty(strfind(fn{i},cdat.classname(obj.Interface))) == 0
+                  delete(obj.Interface);
+                  APPDATloc.CURRENTOBJ.MODAL = rmfield(APPDATloc.CURRENTOBJ.MODAL,fn{i});
+               end
             end
          end
-                  
+         
+         setappdata(obj.Parent,'appdata',APPDATloc);
+         
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.sess);
          Hloc = rmfield(Hloc,{'sess'});
          setappdata(obj.Parent,'uihandles',Hloc);
-         
-         delete(fig); %Destroy graphic handle object: figure; all uicontrol objects are deleted automatically
+
          obj.delete(); %Destroy this object
       end
       %Destructor

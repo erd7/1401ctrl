@@ -67,10 +67,12 @@ classdef cdat < handle
          setappdata(hmain,'appdata',APPDATloc);
          clear fn APPDATloc;
       end
-      function delobj(hmain,cat)
+      function delobj(hmain,cat) %//mache var arg: lösche ganze cat oder einzelnes obj!
          APPDATloc = getappdata(hmain,'appdata');
+         
          if isempty(APPDATloc.CURRENTOBJ.(cat)) == 0
             fn = fieldnames(APPDATloc.CURRENTOBJ.(cat));
+            
             for i=1:length(fn)
                if isobject(APPDATloc.CURRENTOBJ.(cat).(fn{i})) == 1
                   delete(APPDATloc.CURRENTOBJ.(cat).(fn{i}));

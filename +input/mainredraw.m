@@ -7,7 +7,6 @@ classdef mainredraw < input.maininput
       ContainerPosition
       ButtonString1
       ButtonString2
-      Calling
    end
    methods
       %Constructor: //Use position: [0.8,0.85,0.16,0.1] (testing)
@@ -16,12 +15,11 @@ classdef mainredraw < input.maininput
          obj = obj@input.maininput(hmain,iniedit,inilbl,inievt);
          
          Hloc = getappdata(obj.Parent,'uihandles');
-         obj.Calling = obj;
          obj.ContainerPosition = pos;
          obj.ButtonString1 = lbl1;
          obj.ButtonString2 = lbl2;
          
-         cdat.setobj(hmain,obj,'MODAL');
+         %cdat.setobj(hmain,obj,'MODAL');
          
          Hloc.radiogrp = uibuttongroup('Position',obj.ContainerPosition,'BackgroundColor',[0.8,0.8,0.8],'SelectionChangeFcn',@(src,evt)RadioCheck(obj,hmain,src,evt));
          Hloc.radio1 = uicontrol('Style','Radio','String',lbl1,'pos',[10,8,40,15],'BackgroundColor',[0.8,0.8,0.8],'parent',Hloc.radiogrp,'Selected','on','SelectionHighlight','off'); %default selection
@@ -43,7 +41,7 @@ classdef mainredraw < input.maininput
          end
       end
       function redraw(obj,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen!
-         obj.redraw@input.maininput(mod);
+         obj.redraw@input.userinput(mod);
          
          %//Hier variabilität der cases im Argument berücksichtigen und mit schleife cases durchiterieren!
          if mod == 1               

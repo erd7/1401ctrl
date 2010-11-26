@@ -3,7 +3,6 @@
 %Also include IniData struct into redraw?
 classdef maininput < input.userinput
    properties
-      Parent
       ListeningTo
       InputState
       IniData
@@ -11,15 +10,14 @@ classdef maininput < input.userinput
    methods
       %Constructor:
       function obj = maininput(hmain,pedit,plbl,pevt)
-         obj.Parent = hmain;
+         %As superclass constructor requires arguments, call explicitly:
+         obj = obj@input.userinput(hmain);
+         
          obj.InputState = pevt(1);
          obj.IniData = struct('pedit',{pedit},'plbl',{plbl},'pevt',{pevt});
          Hloc = getappdata(obj.Parent,'uihandles');
-         
-         cdat.setobj(hmain,obj,'MODAL');
-         
+                          
          for i=1:length(pedit{1}(:,1))
-           %stredit = ['edit',num2str(i)];
             stredit = cdat.uistr(hmain,obj,'edit');
             strEntry = ['Entry',num2str(i)];
          
@@ -30,7 +28,6 @@ classdef maininput < input.userinput
          end
          
          for i=1:length(plbl{1}(:,1))
-            %strlbl = ['lbl',num2str(i)];
             strlbl = cdat.uistr(hmain,obj,'lbl');
             
             Hloc.(strlbl) = uicontrol('Style','text','String',plbl{2}{i,:},'Position',plbl{1}(i,:),'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
@@ -45,8 +42,7 @@ classdef maininput < input.userinput
             align([Hloc.(strlbl),Hloc.(stredit)],'VerticalAlignment','Middle');
          end
          
-         notify(obj,'NewInputAlert');
-         
+         notify(obj,'NewInputAlert');         
       end
       function UpdateInput(obj,src,evt)
          Hloc = getappdata(obj.Parent,'uihandles');
@@ -70,28 +66,6 @@ classdef maininput < input.userinput
          end
          
          notify(obj,'NewInputAlert');
-      end
-      function deluiobj(obj) %//nur auf eigene obj. beziehen, sodass del param redundant ist!
-         Hloc = getappdata(obj.Parent,'uihandles');
-         
-         fn = fieldnames(Hloc);
-         
-         %Destroy every uicontrol obj that is related to constructing instance specified by del:         
-         for i=1:length(fn)
-            if isempty(strfind(fn{i},cdat.classname(obj))) == 0
-               delete(Hloc.(fn{i}));
-               Hloc = rmfield(Hloc,fn{i});
-            end
-         end
-         
-         setappdata(obj.Parent,'uihandles',Hloc);
-      end
-      function redraw(obj,mod) %auch für Wiederverwendung vom Initialisierungsargument abhängig machen! %//Mache privat und nur für das eigene objekt!
-         obj.deluiobj();
-      end
-      %Destructor:
-      function delete(obj)
-         obj.deluiobj();
       end
    end
 end

@@ -1,13 +1,14 @@
 %Implementation of preferences GUI input class as userinput subclass
 classdef prefinput < input.userinput
    properties
-      Parent
       Prefs
    end
    methods
       %Constructor:
       function obj = prefinput(hmain)
-         obj.Parent = hmain;
+         %As superclass constructor requires arguments, call explicitly:
+         obj = obj@input.userinput(hmain);
+         
          Hloc = getappdata(obj.Parent,'uihandles');
          obj.Prefs = getappdata(obj.Parent,'preferences');
          

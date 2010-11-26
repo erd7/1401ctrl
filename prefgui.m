@@ -4,6 +4,7 @@ classdef prefgui < handle
    properties
       Parent
       Prefs
+      Interface
    end
    methods
       %Constructor: //Initialize user options GUI & load default preferences; integrate in obj-management routine; edit destructor correspondingly
@@ -16,7 +17,9 @@ classdef prefgui < handle
          setappdata(obj.Parent,'uihandles',Hloc);
          
          %Build local GUI elements: //here new concrete class prefinput!
-         PREFINPUT = input.prefinput(hmain); %auch manuell zerstören?
+         PREFINPUT = input.prefinput(hmain);
+         
+         obj.Interface = PREFINPUT;
          
          movegui(Hloc.pref,'center');
          set(Hloc.pref,'Visible','on');
@@ -25,22 +28,27 @@ classdef prefgui < handle
       function CloseReq(obj,src,evt)
          %Hier am besten PREFS update!
          %prefinput tag deletion here! make prefinput subclass of maininput (or both of userinput?) and call from there!
-         Hloc = getappdata(obj.Parent,'uihandles');
-         fig = Hloc.pref;
-         
-         fn = fieldnames(Hloc);
-         
-         %Remove every registration entry of related uicontrol objects:         
-         for i=1:length(fn)
-            if isempty(strfind(fn{i},'prefinput')) == 0
-               Hloc = rmfield(Hloc,fn{i});
+         APPDATloc = getappdata(obj.Parent,'appdata');
+                  
+         %Get number of prefinput objects:
+         if isempty(APPDATloc.CURRENTOBJ.MODAL) == 0
+            fn = fieldnames(APPDATloc.CURRENTOBJ.MODAL);
+            
+            for i=1:length(fn)
+               if isempty(strfind(fn{i},cdat.classname(obj.Interface))) == 0
+                  delete(obj.Interface);
+                  APPDATloc.CURRENTOBJ.MODAL = rmfield(APPDATloc.CURRENTOBJ.MODAL,fn{i});
+               end
             end
          end
-                  
+         
+         setappdata(obj.Parent,'appdata',APPDATloc);
+         
+         Hloc = getappdata(obj.Parent,'uihandles');
+         delete(Hloc.pref);
          Hloc = rmfield(Hloc,{'pref'});
          setappdata(obj.Parent,'uihandles',Hloc);
-         
-         delete(fig); %Destroy graphic handle object: figure; all uicontrol objects are deleted automatically
+
          obj.delete(); %Destroy this object
       end
       %Destructor

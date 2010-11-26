@@ -1,13 +1,13 @@
 %Implementation of session setings-GUI input class as userinput subclass
 classdef sessinput < input.userinput
    properties
-      Parent
       Settings
    end
    methods
       %Constructor:
       function obj = sessinput(hmain)
-         obj.Parent = hmain;
+         obj = obj@input.userinput(hmain);
+         
          Hloc = getappdata(hmain,'uihandles');
          obj.Settings = getappdata(obj.Parent,'appdata');
          

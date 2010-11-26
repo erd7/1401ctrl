@@ -18,15 +18,12 @@ classdef cgen_signal < handle
          obj.Parent = hmain;
          obj.ListeningTo = src1;
          obj.DataLength = dat;
-        
+         
          cdat.setobj(hmain,obj,'MODAL');
          
-         %Noch sauber zwischen Radiobuttons unterscheiden!
          addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)GenSignal(obj,obj.ListeningTo.UserInput));
          %Nur für das Event registrieren, wenn Reihenfolge VOR output update gesichert ist! eigenes event? oder immer aus updateroutine callen?
          %--> eigenes event scheint am sichersten, um Generator direkt vom dynamischen User Input abhängig zu machen
-         %--> funktioniert noch nicht; KLÄRE!
-         %addlistener(obj.ListeningTo2,'NewInputAlert',@(src,evt)GenSin(obj,src,evt,src2.Entry1,src2.Entry2,src2.Entry3));
  
          obj.GenSignal(src1.UserInput);
       end
