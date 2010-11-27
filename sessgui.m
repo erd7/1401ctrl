@@ -2,7 +2,6 @@
 classdef sessgui < handle
    properties
       Parent
-      Prefs
       Interface
    end
    methods

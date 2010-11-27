@@ -3,7 +3,6 @@
 classdef prefgui < handle
    properties
       Parent
-      Prefs
       Interface
    end
    methods
@@ -17,8 +16,7 @@ classdef prefgui < handle
          setappdata(obj.Parent,'uihandles',Hloc);
          
          %Build local GUI elements: //here new concrete class prefinput!
-         PREFINPUT = input.prefinput(hmain);
-         
+         PREFINPUT = input.prefinput(hmain);         
          obj.Interface = PREFINPUT;
          
          movegui(Hloc.pref,'center');

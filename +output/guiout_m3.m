@@ -3,20 +3,20 @@
 classdef guiout_m3 < output.guiout
    properties (SetAccess = public, GetAccess = public)
       ListeningTo
-      Parent
       Monitor2
       PlotScaleX
    end
    methods
       %Constructor:
       function obj = guiout_m3(hmain,src1)
+         obj = obj@output.guiout(hmain);
+         
          APPDATloc = getappdata(hmain,'appdata');
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
          obj.PlotScaleX = linspace(0,1,dur*1280);
          
          
          obj.ListeningTo = src1;
-         obj.Parent = hmain;
          
          Hloc = getappdata(hmain,'uihandles');
          
