@@ -15,10 +15,7 @@ classdef guiout_m3 < output.guiout
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
          obj.PlotScaleX = linspace(0,1,dur*1280);
          
-         
          obj.ListeningTo = src1;
-         
-         Hloc = getappdata(hmain,'uihandles');
          
          cdat.setobj(hmain,obj,'MODAL');
          

@@ -48,6 +48,11 @@ classdef cmode < handle
                   {[225,15,50,25],...
                   'SAMPLE',...
                   1};
+               
+               %Reset default sample rate: //Find more appropriate implementation point/ reorganize signal class so that it won't be called on every update if implemented there
+               PREFSloc = getappdata(hmain,'preferences');
+               PREFSloc.samplerate = 40000;
+               setappdata(hmain,'preferences',PREFSloc);
             
                %Delete all invoked objects (related to other program mode) and call new invocations:
                cdat.delobj(hmain,'MODAL');
@@ -80,6 +85,11 @@ classdef cmode < handle
                   {[200,25,100,25],...
                   'START SEQ.',...
                   0};
+               
+               %Reset default sample rate: //Find more appropriate implementation point/ reorganize signal class so that it won't be called on every update if implemented there
+               PREFSloc = getappdata(hmain,'preferences');
+               PREFSloc.samplerate = 1280;
+               setappdata(hmain,'preferences',PREFSloc);
             
                %Delete all invoked objects (related to other program mode) and call new invocations:
                cdat.delobj(hmain,'MODAL');
@@ -113,6 +123,11 @@ classdef cmode < handle
                   {[200,25,100,25],...
                   'START SEQ.',...
                   0};
+               
+               %Reset default sample rate: //Find more appropriate implementation point/ reorganize signal class so that it won't be called on every update if implemented there
+               PREFSloc = getappdata(hmain,'preferences');
+               PREFSloc.samplerate = 1280;
+               setappdata(hmain,'preferences',PREFSloc);
                
                %Delete all invoked objects (related to other program mode) and call new invocations:
                cdat.delobj(hmain,'MODAL');

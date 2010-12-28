@@ -83,7 +83,7 @@ classdef cdat < handle
             setappdata(hmain,'appdata',APPDATloc);
             clear fn APPDATloc;
       end
-      function r = mansmplrt(hmain,input) %Sample rate management
+      function r = mansmplrt(input) %Sample rate management
          downdiv = [0,0];
          
          if mod(4000000,input) == 0

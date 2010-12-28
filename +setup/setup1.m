@@ -22,15 +22,24 @@ classdef setup1 < setup.load1401
          %MATCED32('cedSetTransfer',0,880000); %//Why too big?
       end
       function Load1401(obj,src,evt)
+         PREFSloc = getappdata(hmain,'preferences');
+         APPDATloc = getappdata(hmain,'appdata');
          Hloc = getappdata(obj.Parent,'uihandles');
+         
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         steps = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
+         stepdur = dur/steps;
+         downdiv = cdat.mansmplrt(PREFSloc.samplerate);
+         
          MATCED32('cedSendString','CLEAR;');
          
          %Load RN chunk into 1401::
          %TODO: Define transfer RAM area- note 1MB restriction!
          %NOTE: Because sampling from 4byte data is not possible, DAC sequences have to be spit into chunks! //MAKE DEPEND ON SAMPLE RATE!
          fn = fieldnames(obj.SignalObj.Signal);
-         sz = 2*obj.SignalObj.DataLength*60; %sz: number of BYTES to be sampled from; CHECK MEMDAC PARAMS UP FROM HERE! Array range has to be duplicated due to memory management with 2byte data! NOTE: ONLY SAMPLING FROM 2BYTE DATA IS POSSIBLE!
-         %chunksz = obj.SignalObj.DataLength/10;
+         
+         sz = 2*PREFSloc.samplerate*dur*steps;
+         %chunksz = PREFSloc.samplerate*dur*steps/10; %//MAKE DEPENDENT ON MAX PACKAGE SIZE!
          runs = length(obj.SignalObj.TrigSq);
          trigint = obj.SignalObj.TrigSq(1);
                                    
@@ -44,7 +53,7 @@ classdef setup1 < setup.load1401
          
          for i=1:length(fn)
             dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i});
-            MATCED32('cedTo1401',obj.SignalObj.DataLength,(i-1)*2*obj.SignalObj.DataLength,dacOut);
+            MATCED32('cedTo1401',PREFS.samplerate*stepdur,(i-1)*2*PREFS.samplerate*stepdur,dacOut);
          end
                   
          %Load corresponding chunk of trig sq into 1401:
@@ -74,7 +83,7 @@ classdef setup1 < setup.load1401
          MATCED32('cedSendString','RUNCMD,L;');
          MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
          MATCED32('cedSendString','DIGTIM,C,10,100;'); %//implement clock rate to depend on frqsubdiv; or vice versa (everything dependent on dig sample rate!
-         MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,400,10;']);
+         MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1',num2str(downdiv(2)),';']);
          MATCED32('cedSendString','MEMDAC,?:A;');
          MATCED32('cedSendString','MEMDAC,P:?;');
          MATCED32('cedSendString','RUNCMD,BN,4,A,0;');

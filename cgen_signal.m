@@ -5,7 +5,7 @@ classdef cgen_signal < handle
       ListeningTo
       Signal
       TrigSq
-      DataLength
+      %DataLength
    end
    events
       NewCalcAlert
@@ -17,7 +17,7 @@ classdef cgen_signal < handle
          %Radiogroup sendet event --> Update der Signalarrays!
          obj.Parent = hmain;
          obj.ListeningTo = src1;
-         obj.DataLength = dat;
+         %obj.DataLength = dat;
          
          cdat.setobj(hmain,obj,'MODAL');
          
@@ -33,15 +33,10 @@ classdef cgen_signal < handle
                obj.GenSin(src1.Entry2,src1.Entry3,src1.Entry1);
             case 2
                obj.GenConst(src1.Entry1);
-            case 3
+            case 3               
                obj.GenNoiseSq(src1.Entry1,src1.Entry2,src1.Entry3);
                obj.GenTrigSq(src1.Entry1,0); %//ISI's still dummy arg; make depend!
             case 4
-               %Reset default sample rate:
-               PREFSloc = getappdata(obj.Parent,'preferences');
-               PREFSloc.samplerate = 1280;
-               setappdata(obj.Parent,'preferences',PREFSloc);
-               
                obj.GenNoise(src1.Entry1,src1.Entry2);
          end
          
@@ -68,15 +63,17 @@ classdef cgen_signal < handle
          obj.Signal = NSIG;
       end
       function GenNoiseSq(obj,dur,steps,subdiv)
-         z = ([1:dur*obj.DataLength/10]*0)+1; %Still assume, that sample rate is 1kHz //Split, if signal is too long! --> one minute sequence!
-   
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         z = ([1:dur*PREFSloc.samplerate]*0)+1; %Still assume, that sample rate is 1kHz //Split, if signal is too long! --> one minute sequence!
+         stepdur = dur/subdiv;
+         
          for i=1:steps
             strlvl = ['lvl',num2str(i)];
             NSIG.(strlvl) = (awgn(z,20*log10(25*1/i),'measured')-1); %Linear increase of average RN amp; prove! Scaling factor is empirical for best utilization of voltage range (initially chosen: 8; according to safety guidelines now 20).
             
             for j=1:subdiv
                strsublvl = ['lvl',num2str(i),'_',num2str(j)];
-               NSIG.(strsublvl) = NSIG.(strlvl)(1+obj.DataLength*(j-1):obj.DataLength*(j));
+               NSIG.(strsublvl) = NSIG.(strlvl)(1+stepdur*PREFSloc.samplerate*(j-1):stepdur*PREFSloc.samplerate*(j));
             end
    
             NSIG = rmfield(NSIG,strlvl);

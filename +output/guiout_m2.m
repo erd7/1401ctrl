@@ -11,19 +11,25 @@ classdef guiout_m2 < output.guiout
       function obj = guiout_m2(hmain,src1)
          obj = obj@output.guiout(hmain);
          
-         obj.ListeningTo = src1;
-         obj.PlotScaleX = linspace(0,100000,obj.ListeningTo.DataLength*60);
+         PREFSloc = getappdata(hmain,'preferences');
+         APPDATloc = getappdata(hmain,'appdata');
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         steps = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
          
-         Hloc = getappdata(hmain,'uihandles');
+         obj.ListeningTo = src1;
+         obj.PlotScaleX = linspace(0,steps,PREFSloc.samplerate*dur*steps); %//XLim 100000?
          
          cdat.setobj(hmain,obj,'MODAL');
          
          %Invoke axes objects:
-         %Hloc.disp1 = axes('Units','Pixels','Position',[25,75,450,100],'Parent',hmain,'XLim',[0,40000],'YLim',[-5,5]);
-         Hloc.disp2 = axes('Units','Pixels','Position',[25,210,450,100],'Parent',hmain,'XLim',[0,40000],'YLim',[-5,5]);
-         %title(Hloc.disp2,'SignalDesign'); ylabel(gca,'Test'); xlabel(gca,'Test'); //Why doesn't work?
-         %Hloc.lbl1 = uicontrol('Style','text','String','Sampled signal:','Position',[50,175,100,15],'BackgroundColor',[0.8,0.8,0.8]);
-         Hloc.lbl4 = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
+         Hloc = getappdata(hmain,'uihandles');
+         strdisp = cdat.uistr(hmain,obj,'disp');
+         Hloc.(strdisp) = axes('Units','Pixels','Position',[25,210,450,100],'Parent',hmain,'YLim',[-2,2]); %Do not specify XLim values as this property will be automatically affected by plot (linspace array), but not YLim, so set explicitly on every demand; XLim determines min & max values, so value equal to sample rate would interfere with plot propertes (0 to 1).
+         setappdata(hmain,'uihandles',Hloc);
+         
+         Hloc = getappdata(hmain,'uihandles');
+         strlbl = cdat.uistr(hmain,obj,'lbl');
+         Hloc.(strlbl) = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
          setappdata(hmain,'uihandles',Hloc);
          
          %prüfe: src hier direkt nutzen?
@@ -38,28 +44,39 @@ classdef guiout_m2 < output.guiout
    end
    methods
       function UpdateOutput(obj,src,evt,hmain)
+         APPDATloc = getappdata(hmain,'appdata');
+         PREFSloc = getappdata(hmain,'preferences');
          Hloc = getappdata(hmain,'uihandles');
+         
+         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         steps = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
+         subdiv = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry3;
+         stepdur = dur/subdiv;
+         
+         obj.PlotScaleX = linspace(0,steps,PREFSloc.samplerate*dur*steps);
          
          %Plot signal design:
          fn = fieldnames(obj.ListeningTo.Signal);
          
          %Reconvert signalstruct to array:
          for i=1:length(fn)
-            NSIG((i-1)*10000+1:i*10000) = obj.ListeningTo.Signal.(fn{i});
+            NSIG((i-1)*stepdur*PREFSloc.samplerate+1:i*stepdur*PREFSloc.samplerate) = obj.ListeningTo.Signal.(fn{i});
          end
          
-         set(Hloc.main,'CurrentAxes',Hloc.disp2);       
+         %Plot signal design:
+         set(obj.Parent,'CurrentAxes',Hloc.([cdat.classname(obj),'_','disp1']));
          hplot = plot(obj.PlotScaleX,NSIG,'Parent',gca);
          set(gca,'YLim',[-2,2]);
-         clear Hloc;
+         clear APPDATloc Hloc;
       end
       %Destructor:
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');
-         delete(Hloc.disp2);
-         delete(Hloc.lbl4);
-         Hloc = rmfield(Hloc,{'disp2','lbl4'});
+         delete(Hloc.([cdat.classname(obj),'_','disp1']));
+         delete(Hloc.([cdat.classname(obj),'_','lbl1']));
+         Hloc = rmfield(Hloc,{[cdat.classname(obj),'_','disp1'],[cdat.classname(obj),'_','lbl1']});
          setappdata(obj.Parent,'uihandles',Hloc);
+         clear Hloc;
       end
    end
 end

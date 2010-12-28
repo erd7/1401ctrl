@@ -24,6 +24,7 @@ classdef setup3 < setup.load1401
       end
       function Load1401(obj,src,evt)
          APPDATloc = getappdata(obj.Parent,'appdata');
+         PREFSloc = getappdata(obj.Parent,'preferences');
          Hloc = getappdata(obj.Parent,'uihandles');
          
          %//IMPLEMENT EVERYTHING IN MAININPUT CLASS?
@@ -31,8 +32,8 @@ classdef setup3 < setup.load1401
          set(Hloc.edit2,'Enable','off');
          
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
-         sz = 2*obj.SignalObj.DataLength*dur;
-         chunksz = obj.SignalObj.DataLength*dur/10; %//MAKE DEPENDENT ON MAX PACKAGE SIZE!
+         sz = 2*PREFSloc.samplerate*dur;
+         chunksz = PREFSloc.samplerate*dur/10; %//MAKE DEPENDENT ON MAX PACKAGE SIZE!
          cycles = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
          zeroDC = zeros(1,128);
          twait = 30;

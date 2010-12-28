@@ -83,7 +83,7 @@ classdef prefinput < input.userinput
          obj.Prefs = getappdata(obj.Parent,'preferences');
          obj.Prefs.langpath = obj.UserInput.Entry1;
          
-         if cdat.mansmplrt(obj.Parent,obj.UserInput.Entry2) ~= 0
+         if cdat.mansmplrt(obj.UserInput.Entry2) ~= 0
             obj.Prefs.samplerate = obj.UserInput.Entry2;
          else
             msgbox('Sample rate not valid! Please specify value that is integer divisor of 4000000.','ERROR: Invalid sample rate','error');
