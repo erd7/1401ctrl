@@ -25,7 +25,7 @@ classdef guiout_m1 < output.guiout
          
          %title(Hloc.disp2,'SignalDesign'); ylabel(gca,'Test'); xlabel(gca,'Test'); //Why doesn't work?
          %Hloc.lbl1 = uicontrol('Style','text','String','Sampled signal:','Position',[50,175,100,15],'BackgroundColor',[0.8,0.8,0.8]);
-         strlbl = cdat.uistr(hmain,obj,'disp');
+         strlbl = cdat.uistr(hmain,obj,'lbl');
          Hloc.(strlbl) = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
          setappdata(hmain,'uihandles',Hloc);
          

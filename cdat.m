@@ -20,6 +20,14 @@ classdef cdat < handle
       end
    end
    methods (Static)
+      function r = classname(src)
+         r = class(src);
+         dotpos = strfind(r,'.');
+         
+         if dotpos ~= 0
+            r = r(dotpos+1:end);
+         end
+      end
       function r = uistr(hmain,src,prop)
          Hloc = getappdata(hmain,'uihandles');
          
@@ -33,14 +41,6 @@ classdef cdat < handle
             end
          end
          r = [callingobj,'_',prop,int2str(m+1)];
-      end
-      function r = classname(src)
-         r = class(src);
-         dotpos = strfind(r,'.');
-         
-         if dotpos ~= 0
-            r = r(dotpos+1:end);
-         end
       end
       function getobj()
       end
@@ -82,6 +82,17 @@ classdef cdat < handle
          end
             setappdata(hmain,'appdata',APPDATloc);
             clear fn APPDATloc;
+      end
+      function r = mansmplrt(hmain,input) %Sample rate management
+         downdiv = [0,0];
+         
+         if mod(4000000,input) == 0
+            downdiv(1) = 1;
+            downdiv(2) = 4000000/input;
+            r = downdiv;
+         else
+            r = 0;
+         end
       end
    end
 end
