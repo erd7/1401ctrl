@@ -37,23 +37,31 @@ classdef cgen_signal < handle
                obj.GenNoiseSq(src1.Entry1,src1.Entry2,src1.Entry3);
                obj.GenTrigSq(src1.Entry1,0); %//ISI's still dummy arg; make depend!
             case 4
+               %Reset default sample rate:
+               PREFSloc = getappdata(obj.Parent,'preferences');
+               PREFSloc.samplerate = 1280;
+               setappdata(obj.Parent,'preferences',PREFSloc);
+               
                obj.GenNoise(src1.Entry1,src1.Entry2);
          end
          
          notify(obj,'NewCalcAlert');
       end
       function GenSin(obj,m,n,o)
-         datarray = 0:(obj.DataLength-1); %1datapackage/s by default! u.U. bis zu 1s nachlauf, bis datenpaket fertig gesampled! (oder mehr? wann ist der frühstmögliche eintritt des abbruchsignals?)
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         datarray = 0:(PREFSloc.samplerate-1); %1datapackage/s by default! u.U. bis zu 1s nachlauf, bis datenpaket fertig gesampled! (oder mehr? wann ist der frühstmögliche eintritt des abbruchsignals?)
 
-         obj.Signal = m*sin(2*pi/40000*n*datarray)+o; %nota: zeitliche auflösung sinkt reziprok zur frequenz!
+         obj.Signal = m*sin(2*pi/PREFSloc.samplerate*n*datarray)+o; %nota: zeitliche auflösung sinkt reziprok zur frequenz! --> Datpaksz variable & abh. von Frq.?
       end
       function GenConst(obj,m)
-         datarray = 0:(obj.DataLength-1);
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         datarray = 0:(PREFSloc.samplerate-1);
          
          obj.Signal = m*(datarray*0+1);
       end
       function GenNoise(obj,dur,lvl) %//Integrate into GenNoiseSq (make varargin!)
-         z = ([1:dur*obj.DataLength]*0)+1;
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         z = ([1:dur*PREFSloc.samplerate]*0)+1;
          
          NSIG = awgn(z,20*log10(25*1/lvl),'measured')-1;
          

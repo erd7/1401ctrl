@@ -23,11 +23,14 @@ classdef guiout_m3 < output.guiout
          cdat.setobj(hmain,obj,'MODAL');
          
          %Invoke axes objects:
-         %Hloc.disp1 = axes('Units','Pixels','Position',[25,75,450,100],'Parent',hmain,'XLim',[0,40000],'YLim',[-5,5]);
-         Hloc.disp2 = axes('Units','Pixels','Position',[25,210,450,100],'Parent',hmain,'XLim',[0,230400],'YLim',[-2,2]);
-         %title(Hloc.disp2,'SignalDesign'); ylabel(gca,'Test'); xlabel(gca,'Test'); //Why doesn't work?
-         %Hloc.lbl1 = uicontrol('Style','text','String','Sampled signal:','Position',[50,175,100,15],'BackgroundColor',[0.8,0.8,0.8]);
-         Hloc.lbl4 = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
+         Hloc = getappdata(hmain,'uihandles');
+         strdisp = cdat.uistr(hmain,obj,'disp');
+         Hloc.(strdisp) = axes('Units','Pixels','Position',[25,210,450,100],'Parent',hmain,'YLim',[-2,2]); %Do not specify XLim values as this property will be automatically affected by plot (linspace array), but not YLim, so set explicitly on every demand; XLim determines min & max values, so value equal to sample rate would interfere with plot propertes (0 to 1).
+         setappdata(hmain,'uihandles',Hloc);
+         
+         Hloc = getappdata(hmain,'uihandles');
+         strlbl = cdat.uistr(hmain,obj,'lbl');
+         Hloc.(strlbl) = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);
          setappdata(hmain,'uihandles',Hloc);
          
          %prüfe: src hier direkt nutzen?
@@ -43,13 +46,14 @@ classdef guiout_m3 < output.guiout
    methods
       function UpdateOutput(obj,src,evt,hmain)
          APPDATloc = getappdata(hmain,'appdata');
+         PREFSloc = getappdata(hmain,'preferences');
          Hloc = getappdata(hmain,'uihandles');
          
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
-         obj.PlotScaleX = linspace(0,dur,dur*1280);
+         obj.PlotScaleX = linspace(0,dur,dur*PREFSloc.samplerate);
          
          %Plot signal design:
-         set(Hloc.main,'CurrentAxes',Hloc.disp2);         
+         set(obj.Parent,'CurrentAxes',Hloc.([cdat.classname(obj),'_','disp1']));
          hplot = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
          set(gca,'YLim',[-2,2]);
          clear APPDATloc Hloc;
@@ -57,9 +61,9 @@ classdef guiout_m3 < output.guiout
       %Destructor:
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');
-         delete(Hloc.disp2);
-         delete(Hloc.lbl4);
-         Hloc = rmfield(Hloc,{'disp2','lbl4'});
+         delete(Hloc.([cdat.classname(obj),'_','disp1']));
+         delete(Hloc.([cdat.classname(obj),'_','lbl1']));
+         Hloc = rmfield(Hloc,{[cdat.classname(obj),'_','disp1'],[cdat.classname(obj),'_','lbl1']});
          setappdata(obj.Parent,'uihandles',Hloc);
          clear Hloc;
       end
