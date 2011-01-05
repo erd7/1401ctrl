@@ -22,8 +22,8 @@ classdef setup1 < setup.load1401
          %MATCED32('cedSetTransfer',0,880000); %//Why too big?
       end
       function Load1401(obj,src,evt)
-         PREFSloc = getappdata(hmain,'preferences');
-         APPDATloc = getappdata(hmain,'appdata');
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         APPDATloc = getappdata(obj.Parent,'appdata');
          Hloc = getappdata(obj.Parent,'uihandles');
          
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
@@ -43,7 +43,7 @@ classdef setup1 < setup.load1401
          runs = length(obj.SignalObj.TrigSq);
          trigint = obj.SignalObj.TrigSq(1);
                                    
-         %Since whole transfer of 400kb RN seems to be impossible (only 2byte data!), split into 10 chunks:
+         %Since whole transfer of 400kb RN seems to be impossible (only 2byte data!), split into chunks:
          %//Try to transfer whole sq with decreased sample rate!
          %for j=1:10
          %   dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i})(((j-1)*40000+1):(j*40000));
@@ -53,7 +53,7 @@ classdef setup1 < setup.load1401
          
          for i=1:length(fn)
             dacOut = obj.DacScale * obj.SignalObj.Signal.(fn{i});
-            MATCED32('cedTo1401',PREFS.samplerate*stepdur,(i-1)*2*PREFS.samplerate*stepdur,dacOut);
+            MATCED32('cedTo1401',PREFSloc.samplerate*stepdur,(i-1)*2*PREFSloc.samplerate*stepdur,dacOut);
          end
                   
          %Load corresponding chunk of trig sq into 1401:
@@ -83,7 +83,7 @@ classdef setup1 < setup.load1401
          MATCED32('cedSendString','RUNCMD,L;');
          MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
          MATCED32('cedSendString','DIGTIM,C,10,100;'); %//implement clock rate to depend on frqsubdiv; or vice versa (everything dependent on dig sample rate!
-         MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1',num2str(downdiv(2)),';']);
+         MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,1,',num2str(downdiv(2)),';']);
          MATCED32('cedSendString','MEMDAC,?:A;');
          MATCED32('cedSendString','MEMDAC,P:?;');
          MATCED32('cedSendString','RUNCMD,BN,4,A,0;');

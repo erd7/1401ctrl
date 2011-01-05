@@ -24,7 +24,12 @@ classdef prefinput < input.userinput
          
          Hloc = getappdata(obj.Parent,'uihandles');
          stredit = cdat.uistr(hmain,obj,'edit');
-         Hloc.(stredit) = uicontrol('Style','edit','String',obj.Prefs.mepdelay,'Tag','NUM','Position',[150,300,35,25],'HorizontalAlignment','left','BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
+         Hloc.(stredit) = uicontrol('Style','edit','String',obj.Prefs.smplrtin,'Tag','NUM','Position',[150,300,35,25],'HorizontalAlignment','left','BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
+         setappdata(hmain,'uihandles',Hloc);
+         
+         Hloc = getappdata(obj.Parent,'uihandles');
+         stredit = cdat.uistr(hmain,obj,'edit');
+         Hloc.(stredit) = uicontrol('Style','edit','String',obj.Prefs.mepdelay,'Tag','NUM','Position',[150,275,35,25],'HorizontalAlignment','left','BackgroundColor',[1,1,1],'Callback',@(src,evt)UpdateInput(obj,src,evt)); %User input 1; default value
          setappdata(hmain,'uihandles',Hloc);
          
          Hloc = getappdata(obj.Parent,'uihandles');
@@ -36,10 +41,15 @@ classdef prefinput < input.userinput
          strlbl = cdat.uistr(hmain,obj,'lbl');
          Hloc.(strlbl) = uicontrol('Style','text','String','Output sample rate (Hz):','Position',[25,325,120,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
          setappdata(obj.Parent,'uihandles',Hloc);
+
+         Hloc = getappdata(obj.Parent,'uihandles');
+         strlbl = cdat.uistr(hmain,obj,'lbl');
+         Hloc.(strlbl) = uicontrol('Style','text','String','Input sample rate (Hz):','Position',[25,300,120,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+         setappdata(obj.Parent,'uihandles',Hloc);
          
          Hloc = getappdata(obj.Parent,'uihandles');
          strlbl = cdat.uistr(hmain,obj,'lbl');
-         Hloc.(strlbl) = uicontrol('Style','text','String','MEP trig. delay (ms):','Position',[25,300,120,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
+         Hloc.(strlbl) = uicontrol('Style','text','String','MEP trig. delay (ms):','Position',[25,275,120,15],'HorizontalAlignment','left','FontName','Arial','FontSize',8,'BackgroundColor',[0.8,0.8,0.8]);
          setappdata(obj.Parent,'uihandles',Hloc);
          
          align(Hloc.prefinput_edit2,Hloc.prefinput_lbl2,'VerticalAlignment','Middle');
@@ -81,14 +91,24 @@ classdef prefinput < input.userinput
          
          %Verarbeitungsschritt vorübergehend hier einfügen (gemeinsame UpdateInput Superfunktion und verarbeiten auf notify hin!):
          obj.Prefs = getappdata(obj.Parent,'preferences');
+         
          obj.Prefs.langpath = obj.UserInput.Entry1;
          
+         %//MAKE LOOP!
          if cdat.mansmplrt(obj.UserInput.Entry2) ~= 0
             obj.Prefs.samplerate = obj.UserInput.Entry2;
          else
             msgbox('Sample rate not valid! Please specify value that is integer divisor of 4000000.','ERROR: Invalid sample rate','error');
          end
-         obj.Prefs.mepdelay = obj.UserInput.Entry3;
+         
+         if cdat.mansmplrt(obj.UserInput.Entry3) ~= 0
+            obj.Prefs.samplerate = obj.UserInput.Entry3;
+         else
+            msgbox('Sample rate not valid! Please specify value that is integer divisor of 4000000.','ERROR: Invalid sample rate','error');
+         end
+         
+         obj.Prefs.mepdelay = obj.UserInput.Entry4;
+         
          setappdata(obj.Parent,'preferences',obj.Prefs);
          
          notify(obj,'NewInputAlert'); %//allgemeine ausgabeklasse mit entsprechenden subklassen? verarbeitungsfunktion wäre an dieser stelle allein das update der prefs

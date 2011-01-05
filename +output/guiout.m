@@ -8,6 +8,8 @@ classdef guiout < hgsetget
    methods
       function obj = guiout(hmain)
          obj.Parent = hmain;
+         
+         cdat.setobj(hmain,obj,'MODAL');
       end
    end
    methods (Abstract)

@@ -10,22 +10,17 @@ classdef guiout_m1 < output.guiout
    methods
       %Constructor:
       function obj = guiout_m1(hmain,src1)
+         %As superclass constructor requires argument, call explicitly:
          obj = obj@output.guiout(hmain);
          
          obj.ListeningTo = src1;
          
-         cdat.setobj(hmain,obj,'MODAL');
-         
-         %Invoke axes objects:
-         %Hloc.disp1 = axes('Units','Pixels','Position',[25,75,450,100],'Parent',hmain,'XLim',[0,40000],'YLim',[-5,5]);
-        
          Hloc = getappdata(hmain,'uihandles');
          strdisp = cdat.uistr(hmain,obj,'disp');
          Hloc.(strdisp) = axes('Units','Pixels','Position',[25,210,450,100],'Parent',hmain,'YLim',[-5,5]); %Do not specify XLim values as this property will be automatically affected by plot (linspace array), but not YLim, so set explicitly on every demand; XLim determines min & max values, so value equal to sample rate would interfere with plot propertes (0 to 1).
          setappdata(hmain,'uihandles',Hloc);
          
          %title(Hloc.disp2,'SignalDesign'); ylabel(gca,'Test'); xlabel(gca,'Test'); //Why doesn't work?
-         %Hloc.lbl1 = uicontrol('Style','text','String','Sampled signal:','Position',[50,175,100,15],'BackgroundColor',[0.8,0.8,0.8]);
          Hloc = getappdata(hmain,'uihandles');
          strlbl = cdat.uistr(hmain,obj,'lbl');
          Hloc.(strlbl) = uicontrol('Style','text','String','Signal design:','Position',[50,310,100,15],'BackgroundColor',[0.8,0.8,0.8]);

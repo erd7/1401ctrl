@@ -9,6 +9,7 @@ classdef guiout_m2 < output.guiout
    methods
       %Constructor:
       function obj = guiout_m2(hmain,src1)
+         %As superclass constructor requires argument, call explicitly:
          obj = obj@output.guiout(hmain);
          
          PREFSloc = getappdata(hmain,'preferences');
@@ -18,8 +19,6 @@ classdef guiout_m2 < output.guiout
          
          obj.ListeningTo = src1;
          obj.PlotScaleX = linspace(0,steps,PREFSloc.samplerate*dur*steps); %//XLim 100000?
-         
-         cdat.setobj(hmain,obj,'MODAL');
          
          %Invoke axes objects:
          Hloc = getappdata(hmain,'uihandles');

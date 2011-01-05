@@ -48,12 +48,13 @@ classdef caccess1401 < handle
       end
       %Stimulation control and sampling routine:
       function StimCtrl(obj,src,evt)
-         obj.Prefs = getappdata(obj.Parent,'preferences');
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         obj.Prefs = PREFSloc;
          
          MATCED32('cedSendString','CLEAR;');
          
          chk = -1; %some initial value ~= 0,1,2,-128
-         sz = int2str(2*obj.SignalObj.DataLength); %sz: number of BYTES to be sampled from; note: 1401 splits two byte data into 2 subchunks, claiming twice as much memory space!
+         sz = int2str(2*PREFSloc.samplerate); %sz: number of BYTES to be sampled from; note: 1401 splits two byte data into 2 subchunks, claiming twice as much memory space!
                   
          %Check if 1401 is ready and initiate data transfer:
          while chk ~= 0
@@ -63,7 +64,7 @@ classdef caccess1401 < handle
             
             if chk == 0 %transfer whole data package initially to stimulation
                dacOut = obj.DacScale * obj.SignalObj.Signal; %Conversion of input params into DAC-units:
-               MATCED32('cedTo1401',obj.SignalObj.DataLength,0,dacOut); %Load the data to 1401 buffer (check max. RAM load); to generate complex signals change digits of dacOut- Array! for realtime manipulation invent more dynamic memory management paradigm
+               MATCED32('cedTo1401',PREFSloc.samplerate,0,dacOut); %Load the data to 1401 buffer (check max. RAM load); to generate complex signals change digits of dacOut- Array! for realtime manipulation invent more dynamic memory management paradigm
             end
          end
          
@@ -83,7 +84,7 @@ classdef caccess1401 < handle
             drawnow;
             
             if chk==0 || chk==1
-               MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),0,dacOuth1);
+               MATCED32('cedTo1401',(PREFSloc.samplerate/2),0,dacOuth1);
                while chk == 1
                   %Waiting...
                   MATCED32('cedSendString','MEMDAC,?;');
@@ -92,7 +93,7 @@ classdef caccess1401 < handle
                end
                MATCED32('cedSendString',['MEMDAC,I,2,0,',sz,',0,1,H,10,10;']); %CMD forces start of sampling --> waiting loop; RECONSIDER!
             elseif chk == -128
-               MATCED32('cedTo1401',(obj.SignalObj.DataLength/2),obj.SignalObj.DataLength,dacOuth2);
+               MATCED32('cedTo1401',(PREFSloc.samplerate/2),PREFSloc.samplerate,dacOuth2);
             end
          end
       end

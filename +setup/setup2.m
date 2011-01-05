@@ -21,8 +21,8 @@ classdef setup2 < setup.load1401
          MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
       end
       function Load1401(obj,src,evt)
-         PREFSloc = getappdata(hmain,'preferences');
-         APPDATloc = getappdata(hmain,'appdata');
+         PREFSloc = getappdata(obj.Parent,'preferences');
+         APPDATloc = getappdata(obj.Parent,'appdata');
          Hloc = getappdata(obj.Parent,'uihandles');
          
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;

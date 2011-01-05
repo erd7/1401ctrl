@@ -9,6 +9,7 @@ classdef guiout_m3 < output.guiout
    methods
       %Constructor:
       function obj = guiout_m3(hmain,src1)
+         %As superclass constructor requires argument, call explicitly:
          obj = obj@output.guiout(hmain);
          
          APPDATloc = getappdata(hmain,'appdata');
@@ -16,8 +17,6 @@ classdef guiout_m3 < output.guiout
          obj.PlotScaleX = linspace(0,1,dur*1280);
          
          obj.ListeningTo = src1;
-         
-         cdat.setobj(hmain,obj,'MODAL');
          
          %Invoke axes objects:
          Hloc = getappdata(hmain,'uihandles');
