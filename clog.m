@@ -28,18 +28,19 @@ classdef clog <handle
          %//Implement time stamp in major data structure!
          APPDATloc = getappdata(obj.Parent,'appdata');
          PREFSloc = getappdata(obj.Parent,'preferences');
-         fn = fieldnames(obj.SignalObj.Signal);
+         fn = obj.SignalObj.Sequence;
          
-         dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
-         steps = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
-         subdiv = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry3;
-         stepdur = dur/subdiv;
+         %dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
+         %steps = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
+         %subdiv = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry3;
+         %stepdur = dur/subdiv;
          
          %Reconvert signalstruct to array:
-         for i=1:length(fn)
-            NSIG((i-1)*stepdur*PREFSloc.samplerate+1:i*stepdur*PREFSloc.samplerate) = obj.SignalObj.Signal.(fn{i});
-         end
+         %for i=1:length(fn)
+         %   NSIG((i-1)*stepdur*PREFSloc.samplerate+1:i*stepdur*PREFSloc.samplerate) = obj.SignalObj.Signal.(fn{i});
+         %end
          
+         NSIG = obj.SignalObj.Signal;         
          save(['SIGNAL_',APPDATloc.subject,'.mat'],'NSIG');
          clear NSIG;
          

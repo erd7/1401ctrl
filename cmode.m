@@ -44,7 +44,7 @@ classdef cmode < handle
                   500,210,50,15;...
                   500,240,50,15;...
                   25,15,50,15],...
-                  {'OFF:';'AMP (V):';'FRQ (Hz):';'SWEEPS:'}};
+                  {'OFF (V):';'AMP (V):';'FRQ (Hz):';'SWEEPS:'}};
                inievt = [1];
                initggl =...
                   {[225,15,50,25],...
@@ -63,7 +63,7 @@ classdef cmode < handle
                MAININPUT = input.mainredraw(hmain,iniedit,inilbl,inievt,[0.738,0.85,0.16,0.1],'SIN','CC');
                SIGNAL = cgen_signal(hmain,MAININPUT,40000); %Make data length independent from user requirements! 1s at 40kHz for mode 1.
                GUIOUT = output.guiout_m1(hmain,SIGNAL);
-               ACCESS1401 = caccess1401(hmain,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse? --> obj-handle- sammelstruktur nötig!
+               ACCESS1401 = drive1401.run1401(hmain,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse?
 
                APPDATloc = getappdata(hmain,'appdata');
                APPDATloc.ModeCheck = 1;

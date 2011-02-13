@@ -48,7 +48,7 @@ classdef setup2 < setup.load1401
          %MATCED32('cedSendString',['VAR,S,Z,',int2str(sz),';']); %For waiting: Monitor currently sampled byte adress //Pointer- Alternative! //z.Z. Sq.-Alternative implementiert
          MATCED32('cedSendString',['MEMDAC,I,2,0,',int2str(sz),',0,1,H,1,',num2str(downdiv(2)),';']); %Sample rate is 1280
          MATCED32('cedSendString','MEMDAC,?:A;');
-         %MATCED32('cedSendString','MEMDAC,P:?;'); %//NOTE: Works, but floads output buffer- checkout continously, if implemented!
+         %MATCED32('cedSendString','MEMDAC,P:?;'); %//NOTE: Works, but floods output buffer- checkout continously, if implemented!
          MATCED32('cedSendString','RUNCMD,BN,2,A,0;');
          %MATCED32('cedSendString','VAR,S,Z,1;');
          %//NULLSTROM HIER! (MEMDAC AN LEERER ADRESSE)

@@ -4,6 +4,7 @@ classdef cgen_signal < handle
       Parent
       ListeningTo
       Signal
+      Sequence
       TrigSq
       %DataLength
    end
@@ -79,7 +80,18 @@ classdef cgen_signal < handle
             NSIG = rmfield(NSIG,strlvl);
          end
          
-            obj.Signal = orderfields(NSIG,randperm(steps*subdiv));
+         NSIG = orderfields(NSIG,randperm(steps*subdiv));
+            
+         %Reconvert signalstruct to array:
+         fn = fieldnames(NSIG);
+         
+         for i=1:length(fn)
+            sig((i-1)*stepdur*PREFSloc.samplerate+1:i*stepdur*PREFSloc.samplerate) = NSIG.(fn{i});
+         end
+         
+         obj.Signal = sig;
+         obj.Sequence = fn;
+         clear sig NSIG fn;
       end
       function GenTrigSq(obj,dur,isi) %//Implementiere ISI-Eingabe; //In SIGNALOBJ. implementieren! --> bisher kein update zur laufzeit möglich!
          %INTERVALLMAXIMUM DARF NICHT == HÄLFTE D. STIMSUBINTERVALS BETRAGEN!

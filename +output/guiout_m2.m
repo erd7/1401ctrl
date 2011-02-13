@@ -49,22 +49,22 @@ classdef guiout_m2 < output.guiout
          
          dur = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
          steps = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
-         subdiv = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry3;
-         stepdur = dur/subdiv;
+         %subdiv = APPDATloc.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry3;
+         %stepdur = dur/subdiv;
          
          obj.PlotScaleX = linspace(0,steps,PREFSloc.samplerate*dur*steps);
          
          %Plot signal design:
-         fn = fieldnames(obj.ListeningTo.Signal);
+         %fn = fieldnames(obj.ListeningTo.Signal);
          
          %Reconvert signalstruct to array:
-         for i=1:length(fn)
-            NSIG((i-1)*stepdur*PREFSloc.samplerate+1:i*stepdur*PREFSloc.samplerate) = obj.ListeningTo.Signal.(fn{i});
-         end
+         %for i=1:length(fn)
+         %   NSIG((i-1)*stepdur*PREFSloc.samplerate+1:i*stepdur*PREFSloc.samplerate) = obj.ListeningTo.Signal.(fn{i});
+         %end
          
          %Plot signal design:
          set(obj.Parent,'CurrentAxes',Hloc.([cdat.classname(obj),'_','disp1']));
-         hplot = plot(obj.PlotScaleX,NSIG,'Parent',gca);
+         hplot = plot(obj.PlotScaleX,obj.ListeningTo.Signal,'Parent',gca);
          set(gca,'YLim',[-2,2]);
          clear APPDATloc Hloc;
       end

@@ -9,7 +9,7 @@ function r = e_1401ctrl()
 %--> PROGRAMMKONZEPT AUFSTELLEN!
 %Make startup&shutdown fct static methods
 %nota: MATLAB objekterzeugung mittels eines eigens def. constructors bedeutet einen std-matlabconstructor zu überladen!
-%Gemeinsame interface klasse für 1401 ansteuerungsklassen (toggle gemeinsam etc.)
+%Gemeinsame interface klasse für 1401 ansteuerungsklassen (toggle gemeinsam etc.); toggle nicht in oberster superclasse gemeinsam!
 %anstelle von obj.Parent gcf oder ähnliches! .. eigene übergeordnete statische methode?
 %X--anpassbar designen: RUNCMD vorerst unterlassen, programmschreiben via MATLAB --> Signalupdate möglich! (RUNCMD nur um die eingabe von 1401 testprogrammen zu erleichtern)
 %TODO: entry (amp) max. 5volts/ min -5volts; mit offset vereinbaren! Graphen X-Achse von 0-1s skalieren (bei weiterhin 40k^-1 schrittweite)!
