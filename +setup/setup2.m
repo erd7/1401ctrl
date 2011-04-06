@@ -14,13 +14,13 @@ classdef setup2 < setup.load1401
          
          cdat.setobj(hmain,obj,'MODAL');
          
-         Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt));
+         Hloc.push1 = uicontrol('Style','Pushbutton','String','LOAD 1401','Position',[200,55,100,25],'Callback',@(src,evt)RunSetup(obj,src,evt));
          
          setappdata(obj.Parent,'uihandles',Hloc);
          
          MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
       end
-      function Load1401(obj,src,evt)
+      function RunSetup(obj,src,evt)
          PREFSloc = getappdata(obj.Parent,'preferences');
          APPDATloc = getappdata(obj.Parent,'appdata');
          Hloc = getappdata(obj.Parent,'uihandles');

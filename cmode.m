@@ -18,6 +18,7 @@ classdef cmode < handle
          Hloc.tmode2 = uipushtool(Hloc.tool,'CData',icon,'UserData','2','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,hmain));
          Hloc.tmode3 = uipushtool(Hloc.tool,'CData',icon,'UserData','3','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,hmain));
          Hloc.tmode4 = uipushtool(Hloc.tool,'CData',icon,'UserData','4','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,hmain));
+         Hloc.tmode5 = uipushtool(Hloc.tool,'CData',icon,'UserData','5','ClickedCallback',@(src,evt)ToolCall(obj,src,evt,hmain));
          setappdata(hmain,'uihandles',Hloc);
          
          APPDATloc = getappdata(hmain,'appdata');
@@ -61,7 +62,7 @@ classdef cmode < handle
                        
                %Invoke instances of control classes (with private GUI elements due to user interface function):
                MAININPUT = input.mainredraw(hmain,iniedit,inilbl,inievt,[0.738,0.85,0.16,0.1],'SIN','CC');
-               SIGNAL = cgen_signal(hmain,MAININPUT,40000); %Make data length independent from user requirements! 1s at 40kHz for mode 1.
+               SIGNAL = cgen_signal(hmain,MAININPUT);
                GUIOUT = output.guiout_m1(hmain,SIGNAL);
                ACCESS1401 = drive1401.run1401(hmain,initggl,SIGNAL); %Klasse als allgemeine Stimulations-Ouputklasse?
 
@@ -100,7 +101,7 @@ classdef cmode < handle
                %Second param is dummy argument because of not having finished complete reusability yet:
 
                MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
-               SIGNAL = cgen_signal(hmain,MAININPUT,10000); %10s at 1kHz for mode 2
+               SIGNAL = cgen_signal(hmain,MAININPUT);
                LOAD = setup.setup1(hmain,SIGNAL);
                LOG = clog(hmain,SIGNAL);
                EXEC1401 = crun1401(hmain,initggl,SIGNAL,MAININPUT,LOAD);
@@ -137,7 +138,7 @@ classdef cmode < handle
                %Invoke instances of control classes (with private GUI elements with respect to user interface function):
                %Second param is dummy argument because of not having finished complete reusability yet:
                MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
-               SIGNAL = cgen_signal(hmain,MAININPUT,1280);
+               SIGNAL = cgen_signal(hmain,MAININPUT);
                LOAD = setup.setup2(hmain,SIGNAL);
                EXEC1401 = crun1401(hmain,initggl,SIGNAL,MAININPUT,LOAD);
                GUIOUT = output.guiout_m3(hmain,SIGNAL);
@@ -164,7 +165,7 @@ classdef cmode < handle
                %Invoke instances of control classes (with private GUI elements with respect to user interface function):
                %Second param is dummy argument because of not having finished complete reusability yet:
                MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
-               SIGNAL = cgen_signal(hmain,MAININPUT,1280);
+               SIGNAL = cgen_signal(hmain,MAININPUT);
                EXEC1401 = setup.setup3(hmain,SIGNAL);
                %GUIOUT = output.guiout_m3(hmain,SIGNAL);
                
@@ -172,6 +173,35 @@ classdef cmode < handle
                APPDATloc.ModeCheck = 4;
                setappdata(hmain,'appdata',APPDATloc);
                clear fn APPDATloc;
+            case 5
+               %Initialisation options:
+               iniedit =...
+                  {[150,25,50,25;...
+                  150,55,50,25;...
+                  150,85,50,25;...
+                  150,115,50,25]...
+                  [0.02;50;100;3]};
+               inilbl =...
+                  {[25,25,125,15;...
+                  25,55,125,15;...
+                  25,85,125,15;...
+                  25,115,125,15]...
+                  {'Initial probability:';'Ticklength (ms):';'Ticks:';'N of trials (per hemisph.):'}};
+               inievt = [0];
+               
+               %Delete all invoked objects (related to other program mode) and call new invocations:
+               cdat.delobj(hmain,'MODAL');
+               
+               %Invoke instances of control classes (with private GUI elements with respect to user interface function):
+               %Second param is dummy argument because of not having finished complete reusability yet:
+               MAININPUT = input.maininput(hmain,iniedit,inilbl,inievt);
+               SIGNAL = cgen_signal(hmain,MAININPUT);
+               SETUP = setup.setup4(hmain,SIGNAL);
+               
+               APPDATloc = getappdata(hmain,'appdata');
+               APPDATloc.ModeCheck = 5;
+               setappdata(hmain,'appdata',APPDATloc);
+               clear APPDATloc;
          end
       end
    end

@@ -1,4 +1,6 @@
 %On event calls method for 1401 stimulation routine (data transfer & execution)
+%HIER SOLLTEN EIGENTLICH NUR SETUPS DER VERSCHIEDENEN MODI AUSGEFÜHRT WERDEN! Wozu zwei Klassensysteme? --> Setups mit privaten elementen im setup laden; überdenke klassensysteme; manage setups in subklassen! Use RunSetup as common function holding script! Gedanke war, setups in gemeinsame ausführungsroutinen zu überführen, aber setups dennoch essentiell!
+%--> IM SETUP NOCH KEINE SIGNALVERARBEITUNG?
 classdef run1401 < drive1401.access1401
    properties (SetAccess = public, GetAccess = public)
       ToggleState = 0;

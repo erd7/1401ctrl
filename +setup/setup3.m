@@ -14,7 +14,7 @@ classdef setup3 < setup.load1401
          
          cdat.setobj(hmain,obj,'MODAL');
          
-         Hloc.push1 = uicontrol('Style','Pushbutton','String','RUN SQ.','Position',[200,55,100,25],'Callback',@(src,evt)Load1401(obj,src,evt));
+         Hloc.push1 = uicontrol('Style','Pushbutton','String','RUN SQ.','Position',[200,55,100,25],'Callback',@(src,evt)RunSetup(obj,src,evt));
          Hloc.lbls1 = uicontrol('Style','text','String','WAITING FOR SQ. START...','Position',[25,85,400,15],'HorizontalAlignment','left','BackgroundColor',[0.8,0.8,0.8]);
          Hloc.lbls2 = uicontrol('Style','text','String','...','Position',[25,105,150,35],'FontSize',20,'BackgroundColor',[1,0.5,0.5]);
          
@@ -22,7 +22,7 @@ classdef setup3 < setup.load1401
          
          MATCED32('cedLdX',PREFSloc.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
       end
-      function Load1401(obj,src,evt)
+      function RunSetup(obj,src,evt)
          APPDATloc = getappdata(obj.Parent,'appdata');
          PREFSloc = getappdata(obj.Parent,'preferences');
          Hloc = getappdata(obj.Parent,'uihandles');

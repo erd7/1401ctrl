@@ -94,5 +94,82 @@ classdef cdat < handle
             r = 0;
          end
       end
+      function r = chance(p,acc)
+         %A minimum of 100 for acc is recommended.
+         %NOTE: To avoid exceeding the MATLAB function limit or program crash due to memory overflow, for very low and high probabilities the cut off is set to 10^6 probability array elements; note floating probability threshold at different accuracies; for example, at a accuracy of 100 minimum probability is 10^-4!
+         if p < 0 || p > 1
+            errordlg('Probability has to be a real number between 0 and 1.');
+            r = -1;
+         else
+            p = round(acc/p);
+            
+            if p < 1000000
+               stream = randperm(p);
+            else
+               stream = randperm(1000000);
+            end
+               
+            if ismember(stream(1),[1:acc]) == 1
+               r = 1;
+            else
+               r = 0;
+            end
+         end
+         clear stream;
+      end
+      function r = onhazard(pf,tick)
+         % ONHAZARD performs hazard event occurance online
+         % pf should express a function depicting the time course of probabilities, tick is rate in ms
+         % Funktionsargument so, dass startw'keit so angepasst wird, dass nach einer bestimmten anzahl von ticks eine bestimmte kumulative w'keit erreicht wird?
+
+         event = 0;
+         cumul = 0;
+         pfinv = [1,(pf-1)*-1];
+         
+         for i=1:length(pf)
+            %if cdat.chance(pf(i),100) == 0
+            if event == 0
+               event = cdat.chance(pf(i),100);
+               pause(tick/1000);
+               cumul = cumul + prod(pfinv(1:i))*pf(i); %General way of simple cumulative bernoulli (verif.); SEE NOTES
+               display(['Run ',num2str(i),': p is ',num2str(pf(i)*100),'%; Cumulative chance was: ',num2str(cumul*100),'%']);
+            else
+               break;
+            end
+         end
+         
+         r = event;
+      end
+      function [r1,r2] = offhazard(pf,tickres)
+         % OFFHAZARD precalculates event occurance delay dependent on input time scale (ms); length of pf * tickres determines full cycle time
+         % pf should express a function depicting the time course of probabilities, tick is rate in ms
+         
+%          i=1;
+         event = 0;
+         delay = 0;
+         cumul = 0;
+         pfinv = [1,(pf-1)*-1];
+         
+%          while i <= length(pf) && cdat.chance(pf(i),100) == 0
+%             delay = delay + tickres;
+%             cumul = cumul + (1-pf(i))^(i-1)*pf(i);
+%             %display(['Run ',num2str(i),': p is ',num2str(pf(i)*100),'%; Cumulative chance: ',num2str(cumul*100),'%']);
+%             i=i+1;
+%          end
+         
+         for i=1:length(pf)
+            if event == 0
+               event = cdat.chance(pf(i),100);
+               delay = tickres*(i-1);
+               %cumul = cumul + (1-pf(i))^(i-1)*pf(i);
+               cumul = cumul + prod(pfinv(1:i))*pf(i); %General way of simple cumulative bernoulli (verif.); SEE NOTES
+            else
+               break;
+            end
+         end
+         
+         r1 = delay;
+         r2 = cumul;
+      end
    end
 end

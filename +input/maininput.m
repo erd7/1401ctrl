@@ -1,6 +1,7 @@
 %Implementation of main GUI input class as userinput subclass
 %Code reusable due to initialization arguments
 %Also include IniData struct into redraw?
+%//Event for input locking here!
 classdef maininput < input.userinput
    properties
       ListeningTo
