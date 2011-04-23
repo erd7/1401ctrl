@@ -3,6 +3,8 @@ classdef setup4 < setup.load1401
    properties
       Parent
       SignalObj
+      FileObj
+      DeviceObj
    end
    methods
       %Constructor:
@@ -17,25 +19,57 @@ classdef setup4 < setup.load1401
          Hloc.push = uicontrol('Style','Pushbutton','String','RUN SQ.','Position',[225,25,100,115],'Callback',@(src,evt)RunSetup(obj,src,evt));
          setappdata(obj.Parent,'uihandles',Hloc);
          
+         Hloc = getappdata(obj.Parent,'uihandles');
+         Hloc.text = uicontrol('Style','text','String','Specify search path for data file:','Position',[350,55,180,15],'HorizontalAlignment','left','BackgroundColor',[.8,.8,.8],'Callback',@(src,evt)RunSetup(obj,src,evt));
+         setappdata(obj.Parent,'uihandles',Hloc);
+         
+         obj.FileObj = cfile(hmain);
+         obj.DeviceObj = drive1401.access1401(obj.Parent,obj.SignalObj);
+         
          MATCED32('cedLdX',PREFS.langpath,'RUNCMD','VAR','MEMDAC','DIGTIM'); %//Make depend on user input or prog design!
       end
       function RunSetup(obj,src,evt)
          %For this first draft pacemaking will be performed on the local machine (by cogent); consider later 1401 as external, more accurate clock source
          %// Use of cogent graphic probably not necessary!
          %// Überlebensfkt. mit Cumul EW. als Hauptparam.?
-         %// Find optimal machine refresh rate automatically; s. DOC. p.34; Use for automatic calculation of time scale/ time unit in frames! //RELEVANT?
          %// Fixation cross as sprite? Faster handling?
-         %// Use OFFHAZARD with 100ticks, 50 tickres & 2% prob!
          APPDAT = getappdata(obj.Parent,'appdata');
+         
+%          err = obj.FileObj.setfilepath();
+%          
+%          if err == -1
+%             return;
+%          end
+         
+         %Check for data file:
+         if exist([obj.FileObj.DatDir,APPDAT.researcher,'.mat'],'file') == 2
+            load([obj.FileObj.DatDir,APPDAT.researcher,'.mat']);
+            waitfor(msgbox('Data file found for current researcher and loaded successfully.'));
+         else
+            choice = questdlg('There was no data file found in the specified directory for the current researcher. Do you want to create it?','No data file found.','Yes','Cancel','Cancel');
+            if strcmp(choice,'Yes') == 1
+               RES = struct;
+               save([obj.FileObj.DatDir,APPDAT.researcher,'.mat'],'RES');
+            elseif strcmp(choice,'Cancel') == 1
+               return;
+            end
+         end
+         
          hwait = waitbar(0,'Preprocessing stimulus intervals...');
          
-         expstr = [APPDAT.subject,'_',datestr(clock(),'yyyymmddTHHMMSS')];
-         RES.(expstr).RAW.defkey = [0,0];
+         expstr = APPDAT.sesstag;
+         subjstr = [APPDAT.subject,'_',datestr(clock(),'yyyymmddTHHMMSS')];
+         
+         try
+            RES.(expstr).(subjstr).RAW.defkey = [0,0]; %Definition of defkey var and creation of structure
+         catch
+            errordlg('There is at least one session tag invalid; may not contain space characters!');
+         end
          
          ntrial = APPDAT.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry4; %PER HEMISPHERE!
-         RES.(expstr).RAW.trials = zeros(1,2*ntrial); %Array for calculated ITIs
-         RES.(expstr).RAW.onset = zeros(1,2*ntrial); %Array for achieved onset times up from start_cogent
-         RES.(expstr).RAW.actiti = zeros(1,2*ntrial); %Array for achieved ITIs
+         RES.(expstr).(subjstr).RAW.trials = zeros(1,2*ntrial); %Array for calculated ITIs
+         RES.(expstr).(subjstr).RAW.onset = zeros(1,2*ntrial); %Array for achieved onset times up from start_cogent
+         RES.(expstr).(subjstr).RAW.actiti = zeros(1,2*ntrial); %Array for achieved ITIs
          ticks = APPDAT.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry3;
          ticklength = APPDAT.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry2;
          startprob = APPDAT.CURRENTOBJ.MODAL.maininput_1.UserInput.Entry1;
@@ -46,40 +80,51 @@ classdef setup4 < setup.load1401
          prob1 = (-startprob*[0:1/(ticks-1):1])+startprob;
          prob2 = startprob*[0:1/(ticks-1):1];
          
-         flags = -1*ones(1,length(RES.(expstr).RAW.trials)/2);
-         flags = [flags,ones(1,length(RES.(expstr).RAW.trials)/2)];
-         z = randperm(length(flags));
-         flags = flags(z); %Random order of trial flags: 1 will be RIGHT, -1 will be LEFT
-         RES.(expstr).RAW.flags = flags;
+         %Balanced and randomized flags to determine whether hazard rate begins from left or right:
+         cueflags = -1*ones(1,length(RES.(expstr).(subjstr).RAW.trials)/2);
+         cueflags = [cueflags,ones(1,length(RES.(expstr).(subjstr).RAW.trials)/2)];
+         z = randperm(length(cueflags));
+         cueflags = cueflags(z); %Random order of trial flags: 1 will be RIGHT, -1 will be LEFT
+         RES.(expstr).(subjstr).RAW.cueflags = cueflags;
          
-         %Precalculate stimulus offsets using offhazard:
-         for i=1:length(RES.(expstr).RAW.trials)
-            RES.(expstr).RAW.trials(i) = cdat.offhazard(prob1,ticklength);
+         RES.(expstr).(subjstr).RAW.altflags = zeros(1,2*ntrial);
+         
+         %Precalculate stimulus offsets: %//BETR.: Calculating hazard results in "derivation" within subject's perception? Therefore present just dicing, which would be perceived as hazard rate!
+         for i=1:length(RES.(expstr).(subjstr).RAW.trials)
+            dice = [0,0];
             
-            if RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength) == 1 %//HAZARDFKT ÜBERDENKEN?! (Abschluss mit 5000 im konkreten Fall?)
-               RES.(expstr).RAW.trials(i) = RES.(expstr).RAW.trials(i) + cdat.offhazard(prob2,ticklength);
+            while isequal(dice,[1,1]) == 1 || isequal(dice,[0,0]) == 1
+               pick = randi(ticks);
+               
+               dice(1) = cdat.chance(prob1(pick),100);
+               dice(2) = cdat.chance(prob2(pick),100);
             end
             
-            waitbar(i/length(RES.(expstr).RAW.trials),hwait);
+            RES.(expstr).(subjstr).RAW.trials(i) = ticklength*pick;
+            
+            if dice == [1,0]
+               RES.(expstr).(subjstr).RAW.altflags(i) = 1; %TRUE AT THE FLAGGED SIDE
+            elseif dice == [0,1]
+               RES.(expstr).(subjstr).RAW.altflags(i) = -1; %FALSE AT THE FLAGGED SIDE
+            end
+            
+            %NOTA: Bedingungen (s.a.u.) können auch in eine zweigeteilte if-else-Bedingung zusammengeführt werden, die intuitive Lesbarkeit des Programms wird dadurch jedoch entscheidend erschwert
+            
+            waitbar(i/length(RES.(expstr).(subjstr).RAW.trials),hwait);
          end
          
          delete(hwait);
          
-         %LOAD DIGTIM BUFFER HERE! Loading without delay, pulse itself is fired with a small lag of 2ms (minimal prepulse time of first digtim slice)
-         MATCED32('cedSendString','CLEAR;');
-         MATCED32('cedSendString',['DIGTIM,SI,',num2str(2^22),',',num2str(2*16*1),';']);
-         MATCED32('cedSendString','DIGTIM,A,1,1,2;');
-         MATCED32('cedSendString','DIGTIM,A,1,0,2;');
+         %LOAD DIGTIM BUFFER HERE! Loading without delay (single pulse), pulse itself is fired with a small lag of 2ms (minimal prepulse time of first digtim slice)
+         obj.DeviceObj.loadtrig1401([],5);
          
          %NOTE: Keyboard logging seems to be corrupt with synchronous use of cogent2000 & cogent graphics! Try cogent2000 only!         
          config_display(1,2,[0,0,0],[1,1,1],'Arial',50,16,0,0);
-         %config_display(0);
          % cgloadlib;
-         config_log([APPDAT.subject,'_',datestr(clock(),'yyyymmddTHHMMSS'),'.log']);
-         config_results([APPDAT.subject,'_',datestr(clock(),'yyyymmddTHHMMSS'),'.res']);
+         %config_log([APPDAT.sesstag,'_',APPDAT.subject,'_',datestr(clock(),'yyyymmddTHHMMSS'),'.log']);
+         %config_results([APPDAT.sesstag,'_',APPDAT.subject,'_',datestr(clock(),'yyyymmddTHHMMSS'),'.res']);
          config_keyboard(100,5,'nonexclusive');
          % cgopen(1,0,0,1);
-         % cgscale; %//Implement view angles?
          
          start_cogent; %//Escape routine is not save yet!
          %Launch experiment with synchronisation click for a common time scale; start_cogent defines t0!
@@ -127,23 +172,8 @@ classdef setup4 < setup.load1401
          for i=1:2
             drawpict(13+i);
             waitkeydown(inf);
-            RES.(expstr).RAW.defkey(i) = lastkeydown;
+            RES.(expstr).(subjstr).RAW.defkey(i) = lastkeydown;
          end
-         
-%          for i=1:2 %//Was wollte ich hiermit an dieser Stelle bezwecken?
-%             checkkey = [];
-%             drawpict(13+i);
-%             while RES.(expstr).RAW.defkey(i) == 0
-%                %clearkeys;
-%                %readkeys;
-%                
-%                if isempty(checkkey) == 1
-%                   checkkey = lastkeydown;
-%                else
-%                   RES.(expstr).RAW.defkey(i) = checkkey;
-%                end
-%             end
-%          end
          
          %Preparative countdown
          drawpict(4);
@@ -153,203 +183,157 @@ classdef setup4 < setup.load1401
          drawpict(6);
          wait(1000);
          
-         for i=1:length(RES.(expstr).RAW.trials)
-            %Draw fixation cross:
-%             cgpenwid(6);
-%             cgpencol([.8,.8,.8]);
-%             cgdraw(0,40,0,-40);
-%             cgdraw(-40,0,40,0);
-%             cgflip([0,0,0]);
-
-            readkeys;
+         anykey = [0,0];
+         
+         clearkeys;
+         
+         for i=1:length(RES.(expstr).(subjstr).RAW.trials) %Trial loop
+            %Preactivation guiding routine:
+            while isequal(ismember(anykey,RES.(expstr).(subjstr).RAW.defkey),[1,1]) ~= 1
+               drawpict(16);
+               
+               while isequal(ismember(anykey,RES.(expstr).(subjstr).RAW.defkey),[1,1]) ~= 1
+                  readkeys;
+                  key = getkeyup;
+                  if any(ismember(key,anykey)) == 1
+                     anykey(find(ismember(anykey,key))) = 0;
+                  end
+                  
+                  try
+                     if ismember(anykey(1),RES.(expstr).(subjstr).RAW.defkey) ~= 1
+                        anykey(1) = lastkeydown;
+                     elseif ismember(anykey(2),RES.(expstr).(subjstr).RAW.defkey) ~= 1
+                        anykey(2) = lastkeydown;
+                     end
+                  catch
+                     continue;
+                  end
+               end
+               
+               clear key;
+               tprep = time;
+               
+               for j=1:5
+                  drawpict(6+j);
+                  waituntil(tprep+j*1000);
+                  readkeys;
+                  key = getkeyup;
+                  if any(ismember(key,anykey)) == 1
+                     anykey(find(ismember(anykey,key))) = 0;
+                     break;
+                  end
+               end
+               clear key;
+            end
+            
+%             drawpict(1);
+            
+            %//Probed hemisphere indicator:
+            if cueflags(i) == -1 %CUE LEFT
+               drawpict(12);
+            elseif cueflags(i) == 1 %CUE RIGHT
+               drawpict(13);
+            end
+            
+            tind = time;
+            waituntil(tind+1000);
+            
+            %Set intermediate escape point:
+            readkeys;          
             esc = getkeydown;
             if ismember(52,esc) == 1
                stop_cogent;
                break;
             end
-
-            anykey = [0,0];
             
-            drawpict(16);
+            clear key esc;
             
-            while isequal(ismember(anykey,RES.(expstr).RAW.defkey),[1,1]) ~= 1
-               if ismember(anykey(1),RES.(expstr).RAW.defkey) ~= 1
-                  anykey(1) = waitkeydown(inf);
-               elseif ismember(anykey(2),RES.(expstr).RAW.defkey) ~= 1
-                  anykey(2) = waitkeydown(inf);
+            clearkeys; %Blind interval follows.
+            
+            %Drawing fixation cross marks begin of trial:
+            MATCED32('cedSendString','DIGTIM,C,10,100;'); %//Launch before, because of 2ms lag which may be cancelled out with loading lag of new screen
+            drawpict(1);
+            
+            t0 = time;
+            waituntil(t0+RES.(expstr).(subjstr).RAW.trials(i));
+            
+            MATCED32('cedSendString','DIGTIM,C,10,100;');
+            if cueflags(i) == -1  && RES.(expstr).(subjstr).RAW.altflags(i) == 1 %TRUE LEFT --> LEFT (cue)
+               drawpict(2);
+            elseif cueflags(i) == 1 && RES.(expstr).(subjstr).RAW.altflags(i) == 1 %TRUE RIGHT --> RIGHT (cue)
+               drawpict(3);
+            elseif cueflags(i) == -1 && RES.(expstr).(subjstr).RAW.altflags(i) == -1 %FALSE LEFT --> RIGHT (cue)
+               drawpict(3);
+            elseif cueflags(i) == 1 && RES.(expstr).(subjstr).RAW.altflags(i) == -1 %FALSE RIGHT --> LEFT (cue)
+               drawpict(2);
+            end
+            
+            RES.(expstr).(subjstr).RAW.onset(i) = time;
+            %logstring(RES.(expstr).(subjstr).RAW.onset(i));
+            RES.(expstr).(subjstr).RAW.actiti(i) = RES.(expstr).(subjstr).RAW.onset(i) - t0;
+            
+            waituntil(RES.(expstr).(subjstr).RAW.onset(i)+1000); %1s for reactions is granted
+            readkeys;
+            
+            [key,t,n] = getkeyup;
+            
+            if cueflags(i) == -1  && RES.(expstr).(subjstr).RAW.altflags(i) == 1 %TRUE LEFT --> LEFT (cue)
+               if n ~= 1 || any(ismember(key,RES.(expstr).(subjstr).RAW.defkey(1))) ~= 1 %no appropriate key press
+                  response = nan;
+                  rt = nan;
+               elseif n == 1 && isequal(key,RES.(expstr).(subjstr).RAW.defkey(1)) == 1 %single approproate key press
+                  response = key(1);
+                  rt = t(1) - RES.(expstr).(subjstr).RAW.onset(i);
+                  %logkeys;
+               end
+            elseif cueflags(i) == 1 && RES.(expstr).(subjstr).RAW.altflags(i) == 1 %TRUE RIGHT --> RIGHT (cue)
+               if n ~= 1 || any(ismember(key,RES.(expstr).(subjstr).RAW.defkey(2))) ~= 1 %no appropriate key press
+                  response = nan;
+                  rt = nan;
+               elseif n == 1 && isequal(key,RES.(expstr).(subjstr).RAW.defkey(2)) == 1 %single approproate key press
+                  response = key(1);
+                  rt = t(1) - RES.(expstr).(subjstr).RAW.onset(i);
+                  %logkeys;
+               end
+            elseif cueflags(i) == -1 && RES.(expstr).(subjstr).RAW.altflags(i) == -1 %FALSE LEFT --> RIGHT (cue)
+               if n ~= 1 || any(ismember(key,RES.(expstr).(subjstr).RAW.defkey(2))) ~= 1 %no appropriate key press
+                  response = nan;
+                  rt = nan;
+               elseif n == 1 && isequal(key,RES.(expstr).(subjstr).RAW.defkey(2)) == 1 %single approproate key press
+                  response = key(1);
+                  rt = t(1) - RES.(expstr).(subjstr).RAW.onset(i);
+                  %logkeys;
+               end
+            elseif cueflags(i) == 1 && RES.(expstr).(subjstr).RAW.altflags(i) == -1 %FALSE RIGHT --> LEFT (cue)
+               if n ~= 1 || any(ismember(key,RES.(expstr).(subjstr).RAW.defkey(1))) ~= 1 %no appropriate key press
+                  response = nan;
+                  rt = nan;
+               elseif n == 1 && isequal(key,RES.(expstr).(subjstr).RAW.defkey(1)) == 1 %single approproate key press
+                  response = key(1);
+                  rt = t(1) - RES.(expstr).(subjstr).RAW.onset(i);
+                  %logkeys;
                end
             end
             
-            tprep = time;
-            drawpict(7);
-            waituntil(tprep+1000);
-            drawpict(8);
-            waituntil(tprep+2000);
-            drawpict(9);
-            waituntil(tprep+3000);
-            drawpict(10);
-            waituntil(tprep+4000);
-            drawpict(11);
-            waituntil(tprep+5000);
-            
-%             drawpict(1);
-            
-               %//Probed hemisphere indicator:
-               if flags(i) == -1
-                  drawpict(12);
-               elseif flags(i) == 1
-                  drawpict(13);
-               end
-               
-               tind = time;
-               waituntil(tind+1000);
-               
-               drawpict(1);
-            
-            if RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength) <= 1
-               
-%                %//Probed hemisphere indicator:
-%                if flags(i) == -1
-%                   drawpict(12);
-%                elseif flags(i) == 1
-%                   drawpict(13);
-%                end
-%                
-%                tind = time;
-%                waituntil(tind+1000);
-%                
-%                drawpict(1);
-               
-               t0 = time;
-               waituntil(t0+RES.(expstr).RAW.trials(i));
-               %cgpencol([1,.4,.4]);
-               %cgellipse(-200,0,100,100,'f');
-               %cgflip([0,0,0]);
-               
-               if flags(i) == -1
-                  drawpict(2);
-               elseif flags(i) == 1
-                  drawpict(3);
-               end
-
-               RES.(expstr).RAW.onset(i) = time; 
-               logstring(RES.(expstr).RAW.onset(i));
-               RES.(expstr).RAW.actiti(i) = RES.(expstr).RAW.onset(i) - t0;
-               
-               clearkeys;
-               waituntil(RES.(expstr).RAW.onset(i)+1000);
-               readkeys; %Read all key events
-               
-               esc = getkeydown;
-               if ismember(52,esc) == 1
-                  stop_cogent;
-                  break;
-               end
-               
-               if flags(i) == -1
-                  [key,t,n] = getkeyup;
-                  if n == 0 || isequal(key,RES.(expstr).RAW.defkey(1)) ~= 1 %no key press
-                     response = nan;
-                     rt = nan;
-                  elseif n == 1 && isequal(key,RES.(expstr).RAW.defkey(1)) == 1 %single key press
-                     response = key(1);
-                     rt = t(1) - RES.(expstr).RAW.onset(i);
-                     logkeys;
-                  else
-                     response = nan; %multiple or false key press
-                     rt = nan;
-                  end
-               elseif flags(i) == 1
-                  [key,t,n] = getkeyup;
-                  if n == 0 || isequal(key,RES.(expstr).RAW.defkey(2)) ~= 1 %no key press
-                     response = nan;
-                     rt = nan;
-                  elseif n == 1 && isequal(key,RES.(expstr).RAW.defkey(2)) == 1 %single key press
-                     response = key(1);
-                     rt = t(1) - RES.(expstr).RAW.onset(i);
-                     logkeys;
-                  else
-                     response = nan; %multiple or false key press
-                     rt = nan;
-                  end
-               end
-            elseif RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength) > 1
-               
-%                %//Probed hemisphere indicator:
-%                if flags(i) == -1
-%                   drawpict(12);
-%                elseif flags(i) == 1
-%                   drawpict(13);
-%                end
-%                
-%                tind = time;
-%                waituntil(tind+1000);
-%                
-%                drawpict(1);
-               
-               t0 = time;
-               waituntil(t0+RES.(expstr).RAW.trials(i));
-               %cgpencol([1,.4,.4]);
-               %cgellipse(200,0,100,100,'f');
-               %cgflip([0,0,0]);
-               
-               if flags(i) == -1
-                  drawpict(3);
-               elseif flags(i) == 1
-                  drawpict(2);
-               end
-               
-               RES.(expstr).RAW.onset(i) = time; 
-               logstring(RES.(expstr).RAW.onset(i));
-               RES.(expstr).RAW.actiti(i) = RES.(expstr).RAW.onset(i) - t0;
-               
-               clearkeys;
-               waituntil(RES.(expstr).RAW.onset(i)+1000);
-               readkeys;
-               
-               esc = getkeydown;
-               if ismember(52,esc) == 1
-                  stop_cogent;
-                  break;
-               end
-               
-               if flags(i) == -1
-                  [key,t,n] = getkeyup;
-                  if n == 0 || isequal(key,RES.(expstr).RAW.defkey(2)) ~= 1 %no key press
-                     response = nan;
-                     rt = nan;
-                  elseif n == 1 && isequal(key,RES.(expstr).RAW.defkey(2)) == 1 %single key press
-                     response = key(1);
-                     rt = t(1) - RES.(expstr).RAW.onset(i);
-                     logkeys;
-                  else
-                     response = nan; %multiple or false key press
-                     rt = nan;
-                  end
-               elseif flags(i) == 1
-                  [key,t,n] = getkeyup;
-                  if n == 0 || isequal(key,RES.(expstr).RAW.defkey(1)) ~= 1 %no key press
-                     response = nan;
-                     rt = nan;
-                  elseif n == 1 && isequal(key,RES.(expstr).RAW.defkey(1)) == 1 %single key press
-                     response = key(1);
-                     rt = t(1) - RES.(expstr).RAW.onset(i);
-                     logkeys;
-                  else
-                     response = nan; %multiple or false key press
-                     rt = nan;
-                  end
-               end
+            %Refresh button press status:
+            if any(ismember(key,anykey)) == 1
+               anykey(find(ismember(anykey,key))) = 0;
             end
             
             %Add the stimulus, reaction time and key press to the results file.
-            addresults(response,rt);
-            RES.(expstr).RAW.key(i) = response;
-            RES.(expstr).RAW.rt(i) = rt;
+            %addresults(response,rt);
+            RES.(expstr).(subjstr).RAW.key(i) = response;
+            RES.(expstr).(subjstr).RAW.rt(i) = rt;
             
             drawpict(1);
             tpause = time;
             waituntil(tpause+2000);
+            
+            %Perform esc at iteration end if required:
+            if ismember(52,key) == 1
+               stop_cogent;
+               break;
+            end
          end
          
          %cgshut;
@@ -357,130 +341,56 @@ classdef setup4 < setup.load1401
          
          try
             %//Simple processing of reaction times:
-            RES.(expstr).PROC.trueleft = [];
-            RES.(expstr).PROC.falseleft = [];
-            RES.(expstr).PROC.trueright = [];
-            RES.(expstr).PROC.falseright = [];
+            RES.(expstr).(subjstr).PROC.trueleft = [];
+            RES.(expstr).(subjstr).PROC.falseleft = [];
+            RES.(expstr).(subjstr).PROC.trueright = [];
+            RES.(expstr).(subjstr).PROC.falseright = [];
             
-            for i=1:length(RES.(expstr).RAW.trials)
-               if isequal(RES.(expstr).RAW.flags(i),-1) == 1 && le(RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %TRUE LEFT
-                  RES.(expstr).PROC.trueleft = [RES.(expstr).PROC.trueleft,RES.(expstr).RAW.rt(i)];
-               elseif isequal(RES.(expstr).RAW.flags(i),-1) == 1 && gt(RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %FALSE LEFT
-                  RES.(expstr).PROC.falseleft = [RES.(expstr).PROC.falseleft,RES.(expstr).RAW.rt(i)];
-               elseif isequal(RES.(expstr).RAW.flags(i),1) == 1 && le(RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %TRUE RIGHT
-                  RES.(expstr).PROC.trueright = [RES.(expstr).PROC.trueright,RES.(expstr).RAW.rt(i)];
-               elseif isequal(RES.(expstr).RAW.flags(i),1) == 1 && gt(RES.(expstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %FALSE RIGHT
-                  RES.(expstr).PROC.falseright = [RES.(expstr).PROC.falseright,RES.(expstr).RAW.rt(i)];
+%             for i=1:length(RES.(expstr).(subjstr).RAW.trials)
+%                if isequal(RES.(expstr).(subjstr).RAW.cueflags(i),-1) == 1 && le(RES.(expstr).(subjstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %TRUE LEFT
+%                   RES.(expstr).(subjstr).PROC.trueleft = [RES.(expstr).(subjstr).PROC.trueleft,RES.(expstr).(subjstr).RAW.rt(i)];
+%                elseif isequal(RES.(expstr).(subjstr).RAW.cueflags(i),-1) == 1 && gt(RES.(expstr).(subjstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %FALSE LEFT
+%                   RES.(expstr).(subjstr).PROC.falseleft = [RES.(expstr).(subjstr).PROC.falseleft,RES.(expstr).(subjstr).RAW.rt(i)];
+%                elseif isequal(RES.(expstr).(subjstr).RAW.cueflags(i),1) == 1 && le(RES.(expstr).(subjstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %TRUE RIGHT
+%                   RES.(expstr).(subjstr).PROC.trueright = [RES.(expstr).(subjstr).PROC.trueright,RES.(expstr).(subjstr).RAW.rt(i)];
+%                elseif isequal(RES.(expstr).(subjstr).RAW.cueflags(i),1) == 1 && gt(RES.(expstr).(subjstr).RAW.trials(i)/((ticklength*ticks)-ticklength),1) == 1 %FALSE RIGHT
+%                   RES.(expstr).(subjstr).PROC.falseright = [RES.(expstr).(subjstr).PROC.falseright,RES.(expstr).(subjstr).RAW.rt(i)];
+%                end
+%             end
+
+            %Group results according to cond:
+            for i=1:length(RES.(expstr).(subjstr).RAW.trials)
+               if cueflags(i) == -1  && RES.(expstr).(subjstr).RAW.altflags(i) == 1 %TRUE LEFT --> LEFT (cue)
+                  RES.(expstr).(subjstr).PROC.trueleft = [RES.(expstr).(subjstr).PROC.trueleft,RES.(expstr).(subjstr).RAW.rt(i)];
+               elseif cueflags(i) == 1 && RES.(expstr).(subjstr).RAW.altflags(i) == 1 %TRUE RIGHT --> RIGHT (cue)
+                  RES.(expstr).(subjstr).PROC.trueright = [RES.(expstr).(subjstr).PROC.trueright,RES.(expstr).(subjstr).RAW.rt(i)];
+               elseif cueflags(i) == -1 && RES.(expstr).(subjstr).RAW.altflags(i) == -1 %FALSE LEFT --> RIGHT (cue)
+                  RES.(expstr).(subjstr).PROC.falseleft = [RES.(expstr).(subjstr).PROC.falseleft,RES.(expstr).(subjstr).RAW.rt(i)];
+               elseif cueflags(i) == 1 && RES.(expstr).(subjstr).RAW.altflags(i) == -1 %FALSE RIGHT --> LEFT (cue)
+                  RES.(expstr).(subjstr).PROC.falseright = [RES.(expstr).(subjstr).PROC.falseright,RES.(expstr).(subjstr).RAW.rt(i)];
                end
             end
             
-            RES.(expstr).PROC.trueleftratio = length(RES.(expstr).PROC.trueleft) / length(RES.(expstr).RAW.trials);
-            RES.(expstr).PROC.falseleftratio = length(RES.(expstr).PROC.falseleft) / length(RES.(expstr).RAW.trials);
-            RES.(expstr).PROC.truerightratio = length(RES.(expstr).PROC.trueright) / length(RES.(expstr).RAW.trials);
-            RES.(expstr).PROC.falserightratio = length(RES.(expstr).PROC.falseright) / length(RES.(expstr).RAW.trials);
+            RES.(expstr).(subjstr).PROC.trueleftratio = length(RES.(expstr).(subjstr).PROC.trueleft) / length(RES.(expstr).(subjstr).RAW.trials);
+            RES.(expstr).(subjstr).PROC.falseleftratio = length(RES.(expstr).(subjstr).PROC.falseleft) / length(RES.(expstr).(subjstr).RAW.trials);
+            RES.(expstr).(subjstr).PROC.truerightratio = length(RES.(expstr).(subjstr).PROC.trueright) / length(RES.(expstr).(subjstr).RAW.trials);
+            RES.(expstr).(subjstr).PROC.falserightratio = length(RES.(expstr).(subjstr).PROC.falseright) / length(RES.(expstr).(subjstr).RAW.trials);
             
-            RES.(expstr).PROC.mrt_trueleft = nanmean(RES.(expstr).PROC.trueleft);
-            RES.(expstr).PROC.mrt_falseleft = nanmean(RES.(expstr).PROC.falseleft);
-            RES.(expstr).PROC.mrt_trueright = nanmean(RES.(expstr).PROC.trueright);
-            RES.(expstr).PROC.mrt_falseright = nanmean(RES.(expstr).PROC.falseright);
+            RES.(expstr).(subjstr).PROC.mrt_trueleft = nanmean(RES.(expstr).(subjstr).PROC.trueleft);
+            RES.(expstr).(subjstr).PROC.mrt_falseleft = nanmean(RES.(expstr).(subjstr).PROC.falseleft);
+            RES.(expstr).(subjstr).PROC.mrt_trueright = nanmean(RES.(expstr).(subjstr).PROC.trueright);
+            RES.(expstr).(subjstr).PROC.mrt_falseright = nanmean(RES.(expstr).(subjstr).PROC.falseright);
             
-            save([APPDAT.researcher,'.mat'],'RES');
+            save([obj.FileObj.DatDir,APPDAT.researcher,'.mat'],'RES');
          catch
             errordlg('No postprocessing possible: Sequence terminated on user request.');
          end
-         
-%          for i=1:RES.(expstr).RAW.trials
-%             
-%             %Draw fixation cross:
-%             cgpenwid(10);
-%             cgpencol([.8,.8,.8]);
-%             cgdraw(0,40,0,-40);
-%             cgdraw(-40,0,40,0);
-%             cgflip([0,0,0]);
-%             
-%             haz1 = cdat.onhazard(prob1,ticklength); %//More elegant soluation: hazard calls listener!
-%             
-%             %preparestring('+',2);
-%             %drawpict(2);
-%             
-%             if haz1 == 1
-%                %Keep fixation cross by redrawing it on the offscreen area together with the 'left' stimulus:
-%                cgpenwid(10);
-%                cgpencol([.8,.8,.8]);
-%                cgdraw(0,40,0,-40);
-%                cgdraw(-40,0,40,0);
-%                
-%                cgpencol([1,.4,.4]);
-%                cgellipse(-200,0,100,100,'f');
-%                cgflip([0,0,0]);
-%                
-%                t0 = time;
-%                logstring(t0);
-%                clearkeys;
-%                readkeys;
-%                logkeys;
-%                
-%                %Check key press and calculate the reaction time
-%                [ key, t, n ] = getkeydown;
-%                if n == 0 % no key press
-%                   response = 0;
-%                   rt = 0;
-%                elseif n == 1 % single key press
-%                   response = key(1);
-%                   rt = t(1) - t0;
-%                else
-%                   response = 0; % multiple key press
-%                   rt = 0;
-%                end
-%                
-%                addresults(response,rt);
-%             elseif haz1 == 0
-%                haz2 = cdat.onhazard(prob2,ticklength);
-%                
-%                %             if haz2 == 0 %//Reassingnment is redundant since waiting happens anyway
-%                %                haz2 = 1;
-%                %             end
-%                
-%                cgpenwid(10);
-%                cgpencol([.8,.8,.8]);
-%                cgdraw(0,40,0,-40);
-%                cgdraw(-40,0,40,0);
-%                
-%                cgpencol([1,.4,.4]);
-%                cgellipse(200,0,100,100,'f');
-%                cgflip([0,0,0]);
-%                
-%                               t0 = time;
-%                logstring(t0);
-%                clearkeys;
-%                readkeys;
-%                logkeys;
-%                
-%                %Check key press and calculate the reaction time
-%                [ key, t, n ] = getkeydown;
-%                if n == 0 % no key press
-%                   response = 0;
-%                   rt = 0;
-%                elseif n == 1 % single key press
-%                   response = key(1);
-%                   rt = t(1) - t0;
-%                else
-%                   response = 0; % multiple key press
-%                   rt = 0;
-%                end
-%                
-%                addresults(response,rt);
-%             end
-%             pause(1);
-%          end
-%          
-%          cgshut;
-%          stop_cogent;
       end
       function delete(obj)
          Hloc = getappdata(obj.Parent,'uihandles');
          delete(Hloc.push);
-         Hloc = rmfield(Hloc,'push');
+         delete(Hloc.text);
+         Hloc = rmfield(Hloc,{'push','text'});
          setappdata(obj.Parent,'uihandles',Hloc);
       end
    end

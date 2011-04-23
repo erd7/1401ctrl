@@ -3,6 +3,7 @@ classdef cgen_signal < handle
    properties
       Parent
       ListeningTo
+      InputObj
       Signal
       Sequence
       TrigSq
@@ -21,11 +22,20 @@ classdef cgen_signal < handle
          
          cdat.setobj(hmain,obj,'MODAL');
          
-         addlistener(obj.ListeningTo,'NewInputAlert',@(src,evt)GenSignal(obj,obj.ListeningTo.UserInput));
+         APPDAT = getappdata(hmain,'appdata');
+         obj.InputObj = APPDAT.CURRENTOBJ.MODAL.maininput_1;
+         
+         %addlistener(obj.ListeningTo,'Redraw',@(src,evt)UpdateInputObj(obj,src,evt)); %//SUBKLASSE ERZEUGEN, IN DER DIESES IMPLEMENTIERT WIRD!
+         addlistener(obj.InputObj,'NewInputAlert',@(src,evt)GenSignal(obj,obj.InputObj.UserInput));
          %Nur für das Event registrieren, wenn Reihenfolge VOR output update gesichert ist! eigenes event? oder immer aus updateroutine callen?
          %--> eigenes event scheint am sichersten, um Generator direkt vom dynamischen User Input abhängig zu machen
  
-         obj.GenSignal(src1.UserInput);
+         obj.GenSignal(obj.InputObj.UserInput);
+      end
+      function UpdateInputObj(obj,src,evt)
+         APPDAT = getappdata(obj.Parent,'appdata');
+         obj.InputObj = APPDAT.CURRENTOBJ.MODAL.maininput_1;
+         obj.GenSignal(obj.InputObj.UserInput);
       end
       function GenSignal(obj,src1)
          switch obj.ListeningTo.InputState
@@ -94,6 +104,7 @@ classdef cgen_signal < handle
       end
       function GenTrigSq(obj,dur,isi) %//Implementiere ISI-Eingabe; //In SIGNALOBJ. implementieren! --> bisher kein update zur laufzeit möglich!
          %INTERVALLMAXIMUM DARF NICHT == HÄLFTE D. STIMSUBINTERVALS BETRAGEN!
+         %Funktion ist viel zu kompliziert!
          frqsubdiv = 1000;
          time = [1:dur*frqsubdiv*10]*0; %//second factor is frq subdiv, third is measured in seconds (10 seconds for each step now);
          t1 = 3*frqsubdiv;

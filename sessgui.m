@@ -18,7 +18,6 @@ classdef sessgui < handle
          SESSINPUT = input.sessinput(hmain);
          obj.Interface = SESSINPUT;
          
-         
          movegui(Hloc.sess,'center');
          set(Hloc.sess,'Visible','on');
       end

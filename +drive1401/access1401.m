@@ -39,6 +39,28 @@ classdef access1401 < handle
             MATCED32('cedTo1401',PREFSloc.samplerate,0,dacOut); %Load the data to 1401 buffer (check max. RAM load); to generate complex signals change digits of dacOut- Array! for realtime manipulation invent more dynamic memory management paradigm
          end
       end
+      function loadtrig1401(obj,isi,trigdur) %//Maybe static?
+         %Set isi = [] if only one (initial) trigger is required
+         %//Maybe check load cmd status first and load DIGTIM at this point if necessary; langpath as argument or assume prefs structure?
+         
+         %//Using DIG for only one trig is also an alternative!
+         MATCED32('cedSendString','CLEAR;');
+         MATCED32('cedSendString',['DIGTIM,SI,',num2str(2^22),',',num2str(2*16*1),';']); %//Inplement memory management!
+         
+         %First click always comes with a latency of 2ms (minimum); (see downsampling on exec; make dependent?)
+         MATCED32('cedSendString','DIGTIM,A,1,1,2;');
+         MATCED32('cedSendString',['DIGTIM,A,1,0,',num2str(trigdur),';']);
+         
+         if isempty(isi) == 0
+            for i=1:length(isi)
+               MATCED32('cedSendString',['DIGTIM,A,1,1,',num2str(trigint(i)),';']);
+               MATCED32('cedSendString',['DIGTIM,A,1,0,',num2str(trigdur),';']);
+            end
+         end
+         
+         %Use only output events:
+         MATCED32('cedSendString','DIGTIM,OD;');
+      end
       function delete(obj)
          %//deluiobj() currently method of userinput class; make cdat?!
          %obj.deluiobj();

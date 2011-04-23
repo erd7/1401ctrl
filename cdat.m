@@ -2,14 +2,17 @@
 %FIRST CLASS TO IMPLEMENT!
 %AUCH 1401 STATUS! //FKT ZUR ROUTINEMÄSSIGEN DEF VON DATASTRUCT!
 classdef cdat < handle
+   properties
+      Parent
+   end
    properties (SetAccess = private)
       TimeStamp
       Stat1401
    end
    methods
       %Overload standard class constructor:
-      function obj = cdat(hmain)         
-         cdat.setobj(hmain,obj,'GENERAL');
+      function obj = cdat(hmain)
+         cdat.setobj(hmain,obj,'MODAL'); %//GENERAL considerable? How to handle subclasses then?
       end
       function r = get.TimeStamp(obj)
          tmp = clock;
@@ -148,7 +151,7 @@ classdef cdat < handle
          event = 0;
          delay = 0;
          cumul = 0;
-         pfinv = [1,(pf-1)*-1];
+         pfinv = [1,(pf-1)*-1]; %PF mirrored at the x-axis + additional first element 1 for calculation
          
 %          while i <= length(pf) && cdat.chance(pf(i),100) == 0
 %             delay = delay + tickres;
@@ -160,7 +163,8 @@ classdef cdat < handle
          for i=1:length(pf)
             if event == 0
                event = cdat.chance(pf(i),100);
-               delay = tickres*(i-1);
+               %delay = tickres*(i-1); %//Try with delay(i); first interval is not zero!
+               delay = tickres*(i);
                %cumul = cumul + (1-pf(i))^(i-1)*pf(i);
                cumul = cumul + prod(pfinv(1:i))*pf(i); %General way of simple cumulative bernoulli (verif.); SEE NOTES
             else
@@ -171,5 +175,8 @@ classdef cdat < handle
          r1 = delay;
          r2 = cumul;
       end
+%       function r = presoffhazard(pf,ticklength)
+%          %//..
+%       end
    end
 end
